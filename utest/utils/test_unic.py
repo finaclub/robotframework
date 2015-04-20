@@ -1,4 +1,4 @@
-from six import PY3
+from six import PY2, PY3
 
 import unittest
 import re
@@ -118,11 +118,11 @@ class TestPrettyRepr(unittest.TestCase):
     def test_no_u_prefix(self):
         self._verify(u'foo', "'foo'")
         self._verify(u"f'o'o", "\"f'o'o\"")
-        self._verify(u'hyv\xe4', "'hyv\\xe4'")
+        self._verify(u'hyv\xe4', "'hyv\\xe4'" if PY2 else None)
 
     def test_b_prefix(self):
         self._verify('foo', "b'foo'")
-        self._verify('hyv\xe4', "b'hyv\\xe4'")
+        self._verify('hyv\xe4', "b'hyv\\xe4'" if PY2 else None)
 
     def test_non_strings(self):
         for inp in [1, -2.0, True, None, -2.0, (), [], {},
@@ -157,11 +157,20 @@ class TestPrettyRepr(unittest.TestCase):
         inp1, inp2 = ReprFails(), StrFails()
         exp1, exp2 = inp1.unrepr, repr(inp2)
         self._verify((inp1, inp2, [inp1]),
-                     '(%s, %s, [%s])' % (exp1, exp2, exp1))
+                     '(%s, %s, [%s])' % (exp1, exp2, exp1)
+                     #PY3: different pprint.PrettyPrinter behavior
+                     # - doesn't iterate container
+                     #   if PrettyPrinter.format() text of container
+                     #   is not longer than max line width
+                     # - see PrettyPrinter._format(): ... if sepLines: ...
+                     if PY2 else UnRepr.format('tuple', UnRepr.error))
         self._verify({'x': 1, 2: u'y'},
                      "{2: 'y', b'x': 1}")
         self._verify({1: inp1, None: ()},
-                     '{None: (), 1: %s}' % exp1)
+                     '{None: (), 1: %s}' % exp1
+                     #PY3: different pprint.PrettyPrinter behavior
+                     # - see above
+                     if PY2 else UnRepr.format('dict', UnRepr.error))
 
     def test_dotdict(self):
         self._verify(DotDict({'x': 1, 2: u'y'}),
@@ -177,7 +186,7 @@ class TestPrettyRepr(unittest.TestCase):
         self._verify(range(100))
         self._verify([u'Hello, world!'] * 10,
                      '[%s]' % ', '.join(["'Hello, world!'"] * 10))
-        self._verify(range(300),
+        self._verify(list(range(300)),
                      '[%s]' % ',\n '.join(str(i) for i in range(300)))
         self._verify([u'Hello, world!'] * 30,
                      '[%s]' % ',\n '.join(["'Hello, world!'"] * 30))
