@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from six import reraise
+
 import sys
 
 from java.lang import Thread, Runnable
@@ -53,4 +55,4 @@ class Runner(Runnable):
     def get_result(self):
         if not self._error:
             return self._result
-        raise self._error[0], self._error[1], self._error[2]
+        reraise(self._error[0], self._error[1], self._error[2])
