@@ -34,7 +34,7 @@ def unic(item, *args):
         return _unrepresentable_object(item)
 
 if PY3:
-    def _unic(item, *args):
+    def unic(item, *args):
         if isinstance(item, str):
             return item
         if isinstance(item, (bytes, bytearray)) and not args:
