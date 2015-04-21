@@ -82,12 +82,12 @@ if PY3 and do2to3:
                         # Replace hex codes in strings
                         # with actual unicode characters,
                         # if not used to create bytes objects:
-                        if 'remote' not in dirpath:
+                        if not dirpath.endswith('remote'):
                             text = re.sub(
                               r'\\\\x([0-9a-f]{2})',
                               lambda match: (
                                 chr(int(match.group(1), 16))
-                                if match.group(1) >= '80'
+                                if '80' <= match.group(1) < 'ff'
                                 else match.group(0)),
                               text)
                         text = re.sub(
