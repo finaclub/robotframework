@@ -164,6 +164,8 @@ class ExampleLibrary:
         class FailiningUnicode(object):
             def __init__(self, identifier=identifier):
                 self.identifier = identifier
+            def __str__(self):
+                raise ValueError
             def __unicode__(self):
                 raise ValueError
         if just_one:

@@ -1,14 +1,16 @@
+from __future__ import print_function
+
 from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn
 
 @keyword(name="User ${user} Selects ${item} From Webshop")
 def user_selects_from_webshop(user, item):
-    print "This is always executed"
+    print("This is always executed")
     return user, item
 
 @keyword(name="${prefix:Given|When|Then} this \"${item}\" ${no good name for this arg ...}")
 def this(ignored_prefix, item, somearg):
-    print "%s-%s" % (item, somearg)
+    print("%s-%s" % (item, somearg))
 
 @keyword(name="My embedded ${var}")
 def my_embedded(var):
@@ -20,15 +22,15 @@ def gets_from_the(x, y, z):
 
 @keyword(name="${a}-lib-${b}")
 def mult_match1(a, b):
-    print "%s-lib-%s" % (a, b)
+    print("%s-lib-%s" % (a, b))
 
 @keyword(name="${a}+lib+${b}")
 def mult_match2(a, b):
-    print "%s+lib+%s" % (a, b)
+    print("%s+lib+%s" % (a, b))
 
 @keyword(name="${a}*lib*${b}")
 def mult_match3(a, b):
-    print "%s*lib*%s" % (a, b)
+    print("%s*lib*%s" % (a, b))
 
 @keyword(name="I execute \"${x:[^\"]*}\"")
 def i_execute(x):

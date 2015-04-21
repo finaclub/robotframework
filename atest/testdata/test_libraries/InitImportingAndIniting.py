@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
 
@@ -8,7 +10,7 @@ class Importing(object):
         BuiltIn().import_library('String')
 
     def kw_from_lib_with_importing_init(self):
-        print 'Keyword from library with importing __init__.'
+        print('Keyword from library with importing __init__.')
 
 
 class Initting(object):
@@ -28,4 +30,4 @@ class Initted(object):
         self.id = id
 
     def kw_from_lib_initted_by_init(self):
-        print 'Keyword from library initted by __init__ (id: %s).' % self.id
+        print('Keyword from library initted by __init__ (id: %s).' % self.id)

@@ -49,7 +49,7 @@ Log repr
     [Setup]    Set Log Level    DEBUG
     Log    Hyvää yötä \u2603!    repr=True
     Log    ${42}    DEBUG    ${FALSE}    ${FALSE}    ${TRUE}
-    ${bytes} =    Evaluate    chr(0) + chr(255)
+    ${bytes} =    Convert To Bytes    0 255    input_type=int
     Log    ${bytes}    repr=yes
     ${list} =    Create List    Hyvä    \u2603    ${42}    ${bytes}
     Log    ${list}    repr=yes    console=please
@@ -57,15 +57,15 @@ Log repr
 Log pprint
     ${dict} =    Evaluate    {u'a long string': 1, u'a longer string!': 2, u'a much, much, much, much, much, much longer string': 3, u'list': [u'a long string', u'a longer string!', u'a much, much, much, much, much, much longer string']}
     Log    ${dict}    repr=yes    console=please
-    ${list} =    Evaluate    ['One', u'Two', 3]
+    ${list} =    Evaluate    [b'One', u'Two', 3]
     Log    ${list}    repr=yes    console=please
-    ${list} =    Evaluate    ['a long string', u'a longer string!', u'a much, much, much, much, much, much longer string']
+    ${list} =    Evaluate    [b'a long string', u'a longer string!', u'a much, much, much, much, much, much longer string']
     Log    ${list}    repr=yes    console=please
     ${dict} =    Evaluate    {u'a long string': 1, u'a longer string!': 2, u'a much, much, much, much, much, much longer string': 3, u'list': [u'a long string', u'a longer string!', u'a much, much, much, much, much, much longer string']}
     Log    ${dict}    repr=yes
-    ${list} =    Evaluate    [u'One', 'Two', 3]
+    ${list} =    Evaluate    [u'One', b'Two', 3]
     Log    ${list}    repr=yes
-    ${dict} =    Evaluate    {u'a long string': 1, u'a longer string!': 2, u'a much, much, much, much, much, much longer string': 3, u'list': [u'a long string', ${42}, u'Hyvää yötä \u2603!', u'a much, much, much, much, much, much longer string', '\\x00\\xff']}
+    ${dict} =    Evaluate    {u'a long string': 1, u'a longer string!': 2, u'a much, much, much, much, much, much longer string': 3, u'list': [u'a long string', ${42}, u'Hyvää yötä \u2603!', u'a much, much, much, much, much, much longer string', b'\\x00\\xff']}
     Log    ${dict}    repr=yes    console=please
 
 Log callable
