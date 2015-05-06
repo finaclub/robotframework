@@ -143,7 +143,7 @@ class TestSuiteBuilder(object):
         elif template and template.is_active():
             self._create_templated(parent, data, template)
         else:
-            parent.keywords.create(name=data.keyword,
+            parent.keywords.create(name=data.name,
                                    args=tuple(data.args),
                                    assign=tuple(data.assign),
                                    type=kw_type)
