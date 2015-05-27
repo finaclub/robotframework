@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import re
+from itertools import chain
 
 from robot.utils import NormalizedDict
 
@@ -37,7 +38,7 @@ class TagStatistics(object):
         visitor.visit_tag_statistics(self)
 
     def __iter__(self):
-        return iter(sorted(self.tags.values() + self.combined))
+        return iter(sorted(chain(self.tags.values(), self.combined)))
 
 
 class TagStatisticsBuilder(object):

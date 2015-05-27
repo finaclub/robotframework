@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from itertools import chain
 from operator import attrgetter
 from os.path import splitext
 
@@ -39,7 +40,7 @@ class HandlerStore(object):
         self._embedded = [e for e in self._embedded if not e.matches(name)]
 
     def __iter__(self):
-        return iter(sorted(self._normal.values() + self._embedded,
+        return iter(sorted(chain(self._normal.values(), self._embedded),
                            key=attrgetter('name')))
 
     def __len__(self):

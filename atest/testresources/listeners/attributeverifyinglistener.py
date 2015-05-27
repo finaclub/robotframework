@@ -7,9 +7,10 @@ ROBOT_LISTENER_API_VERSION = '2'
 OUTFILE = open(os.path.join(os.getenv('TEMPDIR'), 'listener_attrs.txt'), 'w')
 START_ATTRS = 'doc starttime '
 END_ATTRS = START_ATTRS + 'endtime elapsedtime status '
+KW_ATTRS = 'args assign kwname libname type'
 EXPECTED_TYPES = {'elapsedtime': integer_types, 'tags': list, 'args': list,
-                  'metadata': dict, 'tests': list, 'suites': list,
-                  'totaltests': int}
+                  'assign': list, 'metadata': dict, 'tests': list,
+                  'suites': list, 'totaltests': int}
 
 
 def start_suite(name, attrs):
@@ -29,10 +30,12 @@ def end_test(name, attrs):
                   END_ATTRS + 'id longname tags critical message template')
 
 def start_keyword(name, attrs):
-    _verify_attrs('START KEYWORD', attrs, START_ATTRS + 'args type')
+    _verify_attrs('START KEYWORD', attrs, START_ATTRS + KW_ATTRS)
+    _verify_name(name, **attrs)
 
 def end_keyword(name, attrs):
-    _verify_attrs('END KEYWORD', attrs, END_ATTRS + 'args type')
+    _verify_attrs('END KEYWORD', attrs, END_ATTRS + KW_ATTRS)
+    _verify_name(name, **attrs)
 
 def _verify_attrs(method_name, attrs, names):
     names = names.split()
@@ -49,6 +52,16 @@ def _verify_attrs(method_name, attrs, names):
         else:
             OUTFILE.write('FAILED | %s: %r, Expected: %s, Actual: %s\n'
                           % (name, value, exp_type, type(value)))
+
+def _verify_name(name, kwname=None, libname=None, **ignored):
+    if libname:
+        if name != '%s.%s' % (libname, kwname):
+            OUTFILE.write("FAILED | KW NAME: '%s' != '%s.%s'\n" % (name, libname, kwname))
+    else:
+        if name != kwname:
+            OUTFILE.write("FAILED | KW NAME: '%s' != '%s'\n" % (name, kwname))
+        if libname != '':
+            OUTFILE.write("FAILED | LIB NAME: '%s' != ''\n" % libname)
 
 def close():
     OUTFILE.close()

@@ -84,7 +84,7 @@ class Setting(object):
         return self.__bool__()
 
     def __iter__(self):
-        return iter(self.value)
+        return iter(self.value or ())
 
     def __unicode__(self):
         return unicode(self.value or '')
