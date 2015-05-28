@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import text_type as unicode
+from six import integer_types, text_type as unicode
 
 from robot.errors import (ExecutionFailed, ExecutionFailures, ExecutionPassed,
                           ExitForLoop, ContinueForLoop, DataError,
@@ -201,10 +201,10 @@ class ForLoopRunner(object):
         return frange(*items)
 
     def _to_number_with_arithmetics(self, item):
-        if isinstance(item, (int, long, float)):
+        if isinstance(item, integer_types + (float, )):
             return item
         number = eval(str(item), {})
-        if not isinstance(number, (int, long, float)):
+        if not isinstance(number, integer_types + (float, )):
             raise TypeError("Expected number, got %s." % type_name(item))
         return number
 
