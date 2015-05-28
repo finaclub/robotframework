@@ -23,7 +23,8 @@ Directory Suite
     Should Be Equal  ${SUITE.doc}  Something
     Should Be Equal  ${SUITE.metadata['x']}  y
     Should Be Equal  ${SUITE.metadata['a']}  b
-    Should Be True   ${SUITE.metadata.items()} == [('a', 'b'), ('x', 'y')]
+    ${items} =    Create List   @{SUITE.metadata.items()}
+    Should Be True   ${items} == [('a', 'b'), ('x', 'y')]
     Check Suite Got From misc/suites/ Directory
 
 Minimal hand-created output
