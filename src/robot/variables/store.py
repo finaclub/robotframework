@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from six import PY3
+
 from robot.errors import DataError
 from robot.utils import (DotDict, is_dict_like, is_list_like, NormalizedDict,
                          type_name)
@@ -28,7 +30,10 @@ class VariableStore(object):
         self._variables = variables
 
     def resolve_delayed(self):
-        for name, value in self.data.items():
+        items = self.data.items()
+        if PY3: # need list() because items can be removed during loop
+            items = list(items)
+        for name, value in items:
             try:
                 self._resolve_delayed(name, value)
             except DataError:
