@@ -118,25 +118,19 @@ Options
  -n --noncritical tag *   Tests with given tag are not critical even if they
                           have a tag set with --critical. Tag can be a pattern.
  -v --variable name:value *  Set variables in the test data. Only scalar
-                          variables are supported and name is given without
-                          `${}`. See --escape for how to use special characters
-                          and --variablefile for a more powerful variable
-                          setting mechanism that allows also list variables.
+                          variables with string value are supported and name is
+                          given without `${}`. See --escape for how to use
+                          special characters and --variablefile for a more
+                          powerful variable setting mechanism.
                           Examples:
-                          --variable str:Hello  =>  ${str} = `Hello`
-                          -v str:Hi_World -E space:_  =>  ${str} = `Hi World`
-                          -v x: -v y:42  =>  ${x} = ``, ${y} = `42`
- -V --variablefile path *  File to read variables from (e.g. `path/vars.py`).
-                          Example file:
-                          |  import random
-                          |  __all__ = [`scalar`, `LIST__var`, `integer`]
-                          |  scalar = `Hello world!`
-                          |  LIST__var = [`Hello`, `list`, `world`]
-                          |  integer = random.randint(1,10)
-                          =>
-                          ${scalar} = `Hello world!`
-                          @{var} = [`Hello`,`list`,`world`]
-                          ${integer} = <random integer from 1 to 10>
+                          --variable str:Hello       =>  ${str} = `Hello`
+                          -v hi:Hi_World -E space:_  =>  ${hi} = `Hi World`
+                          -v x: -v y:42              =>  ${x} = ``, ${y} = `42`
+ -V --variablefile path *  Python or YAML file file to read variables from.
+                          Possible arguments to the variable file can be given
+                          after the path using colon or semicolon as separator.
+                          Examples: --variablefile path/vars.yaml
+                                    --variablefile environment.py:testing
  -d --outputdir dir       Where to create output files. The default is the
                           directory where tests are run from and the given path
                           is considered relative to that unless it is absolute.
@@ -220,9 +214,10 @@ Options
                           automatically converted to spaces.
                           Examples: --tagstatlink mytag:http://my.domain:Link
                           --tagstatlink bug-*:http://tracker/id=%1:Bug_Tracker
-    --removekeywords all|passed|for|wuks|name:<pattern> *  Remove keyword data
-                          from the generated log file. Keywords containing
-                          warnings are not removed except in `all` mode.
+    --removekeywords all|passed|for|wuks|name:<pattern>|tag:<pattern> *
+                          Remove keyword data from the generated log file.
+                          Keywords containing warnings are not removed except
+                          in `all` mode.
                           all:     remove data from all keywords
                           passed:  remove data only from keywords in passed
                                    test cases and suites
@@ -237,20 +232,33 @@ Options
                                    and may contain `*` and `?` as wildcards.
                                    Examples: --removekeywords name:Lib.HugeKw
                                              --removekeywords name:myresource.*
-    --flattenkeywords for|foritem|name:<pattern> *  Flattens matching keywords
-                          in the generated log file. Matching keywords get all
-                          log messages from their child keywords and children
-                          are discarded otherwise.
+                          tag:<pattern>:  remove data from keywords that match
+                                   the given pattern. Tags are case and space
+                                   insensitive and it is possible to use
+                                   patterns with `*` and `?` as wildcards.
+                                   Tags and patterns can also be combined
+                                   together with `AND`, `OR`, and `NOT`
+                                   operators.
+                                   Examples: --removekeywords foo
+                                             --removekeywords fooANDbar*
+    --flattenkeywords for|foritem|name:<pattern>|tag:<pattern> *
+                          Flattens matching keywords in the generated log file.
+                          Matching keywords get all log messages from their
+                          child keywords and children are discarded otherwise.
                           for:     flatten for loops fully
                           foritem: flatten individual for loop iterations
                           name:<pattern>:  flatten matched keywords using same
                                    matching rules as with
                                    `--removekeywords name:<pattern>`
+                          tag:<pattern>:  flatten matched keywords using same
+                                   matching rules as with
+                                   `--removekeywords tag:<pattern>`
     --listener class *    A class for monitoring test execution. Gets
                           notifications e.g. when a test case starts and ends.
-                          Arguments to listener class can be given after class
-                          name, using colon as separator. For example:
-                          --listener MyListenerClass:arg1:arg2
+                          Arguments to the listener class can be given after
+                          the name using colon or semicolon as a separator.
+                          Examples: --listener MyListenerClass
+                                    --listener path/to/Listener.py:arg1:arg2
     --warnonskippedfiles  If this option is used, skipped test data files will
                           cause a warning that is visible in the console output
                           and the log file. By default skipped files only cause
@@ -276,6 +284,10 @@ Options
                           The seed must be an integer.
                           Examples: --randomize all
                                     --randomize tests:1234
+    --prerunmodifier class *  Class to programmatically modify the test suite
+                          structure before execution.
+    --prerebotmodifier class *  Class to programmatically modify the result
+                          model before creating reports and logs.
  -W --monitorwidth chars  Width of the monitor output. Default is 78.
  -C --monitorcolors auto|on|ansi|off  Use colors on console output or not.
                           auto: use colors when output not redirected (default)
@@ -287,11 +299,12 @@ Options
                           console when top level keywords in test cases end.
                           Values have same semantics as with --monitorcolors.
  -P --pythonpath path *   Additional locations (directories, ZIPs, JARs) where
-                          to search test libraries from when they are imported.
-                          Multiple paths can be given by separating them with a
-                          colon (`:`) or using this option several times. Given
-                          path can also be a glob pattern matching multiple
-                          paths but then it normally must be escaped or quoted.
+                          to search test libraries and other extensions when
+                          they are imported. Multiple paths can be given by
+                          separating them with a colon (`:`) or by using this
+                          option several times. Given path can also be a glob
+                          pattern matching multiple paths but then it normally
+                          must be escaped or quoted.
                           Examples:
                           --pythonpath libs/
                           --pythonpath /opt/testlibs:mylibs.zip:yourlibs
@@ -385,6 +398,7 @@ if 'robot' not in sys.modules and __name__ == '__main__':
     import pythonpathsetter
 
 from robot.conf import RobotSettings
+from robot.model import ModelModifier
 from robot.output import LOGGER, pyloggingconf
 from robot.reporting import ResultWriter
 from robot.running import TestSuiteBuilder
@@ -402,9 +416,11 @@ class RobotFramework(Application):
         LOGGER.register_console_logger(**settings.console_logger_config)
         LOGGER.info('Settings:\n%s' % unicode(settings))
         suite = TestSuiteBuilder(settings['SuiteNames'],
-                                 settings['WarnOnSkipped'],
-                                 settings['RunEmptySuite']).build(*datasources)
+                                 settings['WarnOnSkipped']).build(*datasources)
         suite.configure(**settings.suite_config)
+        if settings.pre_run_modifiers:
+            suite.visit(ModelModifier(settings.pre_run_modifiers,
+                                      settings.run_empty_suite, LOGGER))
         with pyloggingconf.robot_handler_enabled(settings.log_level):
             result = suite.run(settings)
             LOGGER.info("Tests execution ended. Statistics:\n%s"

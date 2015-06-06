@@ -30,8 +30,8 @@ after the setting name.
 If the path is given in an absolute format, it is used directly. In other
 cases, the resource file is first searched relatively to the directory
 where the importing file is located. If the file is not found there,
-it is then searched from the directories in ``PYTHONPATH``. The path can
-contain variables, and it is recommended to use them to make paths
+it is then searched from the directories in Python's `module search path`_.
+The path can contain variables, and it is recommended to use them to make paths
 system-independent (for example, :file:`${RESOURCES}/login_resources.html` or
 :file:`${RESOURCE_PATH}`). Additionally, slashes (`/`) in the path
 are automatically changed to backslashes (:codesc:`\\`) on Windows.
@@ -172,8 +172,8 @@ All test data files can import variables using the
 setting. Similarly to resource files, the path to the imported
 variable file is considered relative to the directory where the
 importing file is, and if not found, it is searched from the
-directories in ``PYTHONPATH``. The path can also contain variables, and
-slashes are converted to backslashes on Windows. If an `argument file takes
+directories in the `module search path`_. The path can also contain variables,
+and slashes are converted to backslashes on Windows. If an `argument file takes
 arguments`__, they are specified in the cells after the path and also they
 can contain variables.
 
@@ -211,7 +211,7 @@ and possible arguments are joined to the path with a colon (`:`)::
    --variablefile taking_arguments.py:arg1:arg2
 
 Starting from Robot Framework 2.8.2, variable files taken into use from the
-command line are also searched from the ``PYTHONPATH`` similarly as
+command line are also searched from the `module search path`_ similarly as
 variable files imported in the Setting table.
 
 If a variable file is given as an absolute Windows path, the colon after the
@@ -589,13 +589,13 @@ The following example demonstrates a simple YAML file:
 
           YAML support is new in Robot Framework 2.9.
 
-YAML variable files can be taken into use exactly like normal variable files
+YAML variable files can be used exactly like normal variable files
 from the command line using :option:`--variablefile` option, in the settings
 table using :setting:`Variables` setting, and dynamically using the
 :name:`Import Variables` keyword. The only thing to remember is that paths to
 YAML files must always end with :file:`.yaml` extension.
 
-If the above YAML file would be imported, it would create exactly same
+If the above YAML file is imported, it will create exactly the same
 variables as the following variable table:
 
 .. table::
@@ -611,7 +611,7 @@ variables as the following variable table:
    ============  =============  =============  =============  =============
 
 YAML files used as variable files must always be mappings in the top level.
-As the above example demonstrated, keys and values in the mapping become
+As the above example demonstrates, keys and values in the mapping become
 variable names and values, respectively. Variable values can be any data
 types supported by YAML syntax.
 

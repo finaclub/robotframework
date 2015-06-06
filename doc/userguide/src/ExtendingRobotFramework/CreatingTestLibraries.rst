@@ -500,7 +500,7 @@ Example Java library implemented as a class in the :file:`MyLibrary.java` file:
 
 The example below illustrates how the example libraries above can be
 used. If you want to try this yourself, make sure that the library is
-in the `library search path`_.
+in the `module search path`_.
 
 .. table:: Using simple example library
    :class: example
@@ -523,6 +523,7 @@ in the `library search path`_.
 
 Using a custom keyword name
 '''''''''''''''''''''''''''
+
 It is possible to expose a different name for a keyword instead of the
 default keyword name which maps to the method name.  This can be accomplished
 by setting the `robot_name` attribute on the method to the desired custom name.
@@ -535,13 +536,13 @@ this attribute when used as follows:
 
   @keyword('Login Via User Panel')
   def login(username, password):
-      ...
+      # ...
 
 .. table::
    :class: example
 
    ===========  ====================  ============  ============
-   Test Case    Action                Argument      Argument
+    Test Case          Action           Argument      Argument
    ===========  ====================  ============  ============
    My Test      Login Via User Panel  ${username}   ${password}
    ===========  ====================  ============  ============
@@ -555,6 +556,43 @@ Setting a custom keyword name can also enable library keywords to accept
 arguments using `Embedded Arguments`__ syntax.
 
 __ `Embedding arguments into keyword names`_
+
+Keyword tags
+~~~~~~~~~~~~
+
+Starting from Robot Framework 2.9, library keywords and `user keywords`__ can
+have tags. Library keywords can define them by setting the `robot_tags`
+attribute on the method to a list of desired tags. The `robot.api.deco.keyword`
+decorator may be used as a shortcut for setting this attribute when used as
+follows:
+
+.. sourcecode:: python
+
+  from robot.api.deco import keyword
+
+  @keyword(tags=['tag1', 'tag2'])
+  def login(username, password):
+      # ...
+
+  @keyword('Custom name', ['tags', 'here'])
+  def another_example():
+      # ...
+
+Another option for setting tags is giving them on the last line of
+`keyword documentation`__ with `Tags:` prefix and separated by a comma. For
+example:
+
+.. sourcecode:: python
+
+  def login(username, password):
+      """Log user in to SUT.
+
+      Tags: tag1, tag2
+      """
+      # ...
+
+__ `User keyword tags`_
+__ `Documenting libraries`_
 
 Keyword arguments
 ~~~~~~~~~~~~~~~~~
@@ -987,7 +1025,7 @@ __ `Using a custom keyword name`_
 
     @keyword('Add ${quantity:\d+} Copies Of ${item} To Cart')
     def add_copies_to_cart(quantity, item):
-        ...
+        # ...
 
 .. table:: Using embedded arguments with library keyword
    :class: example
@@ -1659,7 +1697,7 @@ Packaging libraries
 After a library is implemented, documented, and tested, it still needs
 to be distributed to the users. With simple libraries consisting of a
 single file, it is often enough to ask the users to copy that file
-somewhere and set the `library search path`_ accordingly. More
+somewhere and set the `module search path`_ accordingly. More
 complicated libraries should be packaged to make the installation
 easier.
 
@@ -1667,15 +1705,13 @@ Since libraries are normal programming code, they can be packaged
 using normal packaging tools. With Python, good options include
 distutils_, contained by Python's standard library, and the newer
 setuptools_. A benefit of these tools is that library modules are
-installed into a location that is automatically in the `library
+installed into a location that is automatically in the `module
 search path`_.
 
 When using Java, it is natural to package libraries into a JAR
-archive. The JAR package must be put into the `library search path`_
-before running tests, but it is easy to `create a start-up`__ script that
+archive. The JAR package must be put into the `module search path`_
+before running tests, but it is easy to create a `start-up script`_ that
 does that automatically.
-
-__ `Creating start-up scripts`_
 
 Deprecating keywords
 ~~~~~~~~~~~~~~~~~~~~
@@ -1808,7 +1844,7 @@ If a dynamic library should contain both methods which are meant to be keywords
 and methods which are meant to be private helper methods, it may be wise to
 mark the keyword methods as such so it is easier to implement `get_keyword_names`.
 The `robot.api.deco.keyword` decorator allows an easy way to do this since it
-creates an attribute on the decorated method which is not normally there (`robot_name`).
+creates a custom `robot_name` attribute on the decorated method.
 This allows generating the list of keywords just by checking for the `robot_name`
 attribute on every method in the library during `get_keyword_names`.  See
 `Using a custom keyword name`_ for more about this decorator.
@@ -1823,11 +1859,11 @@ attribute on every method in the library during `get_keyword_names`.  See
            return [name for name in dir(self) if hasattr(getattr(self, name), 'robot_name')]
 
        def helper_method(self):
-           ...
+           # ...
 
        @keyword
        def keyword_method(self):
-           ....
+           # ...
 
 .. _`Running dynamic keywords`:
 
@@ -1954,6 +1990,14 @@ Python. The main use case is getting keywords' documentations into a
 library documentation generated by Libdoc_. Additionally,
 the first line of the documentation (until the first `\n`) is
 shown in test logs.
+
+Getting keyword tags
+~~~~~~~~~~~~~~~~~~~~
+
+Dynamic libraries do not have any other way for defining `keyword tags`_
+than by specifying them on the last row of the documentation with `Tags:`
+prefix. Separate `get_keyword_tags` method can be added to the dynamic API
+later if there is a need.
 
 Getting general library documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
