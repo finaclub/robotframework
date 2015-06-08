@@ -4,7 +4,7 @@ Force Tags       regression    pybot    jybot
 Resource         process_resource.robot
 
 *** Variables ***
-${COMMAND}       python -c "import os; print os.path.abspath(os.curdir);"
+${COMMAND}       python -c "import os; print(os.path.abspath(os.curdir));"
 
 *** Test Cases ***
 Explicitly run Operating System library keyword
