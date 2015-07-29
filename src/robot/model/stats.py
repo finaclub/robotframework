@@ -12,9 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types, text_type as unicode
+from six import text_type as unicode
 
-from robot.utils import elapsed_time_to_string, html_escape, normalize
+from robot.utils import (elapsed_time_to_string, html_escape, normalize,
+                         is_string)
 
 from .tags import TagPatterns
 
@@ -61,7 +62,7 @@ class Stat(object):
         return {}
 
     def _html_escape(self, item):
-        return html_escape(item) if isinstance(item, string_types) else item
+        return html_escape(item) if is_string(item) else item
 
     @property
     def total(self):

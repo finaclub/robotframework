@@ -17,8 +17,8 @@ from six import text_type as unicode
 from robot.errors import ExecutionFailed, DataError, PassExecution
 from robot.model import SuiteVisitor
 from robot.result import TestSuite, Result
-from robot.variables import GLOBAL_VARIABLES
 from robot.utils import get_timestamp, NormalizedDict
+from robot.variables import VariableScopes
 
 from .context import EXECUTION_CONTEXTS
 from .keywordrunner import KeywordRunner
@@ -35,6 +35,7 @@ class Runner(SuiteVisitor):
         self.result = None
         self._output = output
         self._settings = settings
+        self._variables = VariableScopes(settings)
         self._suite = None
         self._suite_status = None
         self._executed_tests = None
@@ -43,14 +44,7 @@ class Runner(SuiteVisitor):
     def _context(self):
         return EXECUTION_CONTEXTS.current
 
-    @property
-    def _variables(self):
-        ctx = self._context
-        return ctx.variables if ctx else None
-
     def start_suite(self, suite):
-        variables = GLOBAL_VARIABLES.copy()
-        variables.set_from_variable_table(suite.resource.variables)
         result = TestSuite(source=suite.source,
                            name=suite.name,
                            doc=suite.doc,
@@ -64,22 +58,24 @@ class Runner(SuiteVisitor):
                                   stat_config=self._settings.statistics_config)
         else:
             self._suite.suites.append(result)
-        ns = Namespace(result, variables, self._variables,
-                       suite.resource.keywords, suite.resource.imports)
-        EXECUTION_CONTEXTS.start_suite(ns, self._output, self._settings.dry_run)
-        self._context.set_suite_variables(result)
-        if not (self._suite_status and self._suite_status.failures):
-            ns.handle_imports()
-        variables.resolve_delayed()
-        result.doc = self._resolve_setting(result.doc)
-        result.metadata = [(self._resolve_setting(n), self._resolve_setting(v))
-                           for n, v in result.metadata.items()]
-        self._context.set_suite_variables(result)
         self._suite = result
         self._suite_status = SuiteStatus(self._suite_status,
                                          self._settings.exit_on_failure,
                                          self._settings.exit_on_error,
                                          self._settings.skip_teardown_on_exit)
+        ns = Namespace(self._variables, result, suite.resource.keywords,
+                       suite.resource.imports)
+        ns.start_suite()
+        ns.variables.set_from_variable_table(suite.resource.variables)
+        EXECUTION_CONTEXTS.start_suite(ns, self._output, self._settings.dry_run)
+        self._context.set_suite_variables(result)
+        if not self._suite_status.failures:
+            ns.handle_imports()
+            ns.variables.resolve_delayed()
+        result.doc = self._resolve_setting(result.doc)
+        result.metadata = [(self._resolve_setting(n), self._resolve_setting(v))
+                           for n, v in result.metadata.items()]
+        self._context.set_suite_variables(result)
         self._output.start_suite(ModelCombiner(result, suite,
                                                tests=suite.tests,
                                                suites=suite.suites,
@@ -129,6 +125,9 @@ class Runner(SuiteVisitor):
                                % unicode(err))
         self._context.start_test(result)
         self._output.start_test(ModelCombiner(result, test))
+        if status.exit:
+            self._add_exit_combine()
+            result.tags.add('robot-exit')
         self._run_setup(test.keywords.setup, status, result)
         try:
             if not status.failures:
@@ -159,6 +158,11 @@ class Runner(SuiteVisitor):
         result.endtime = get_timestamp()
         self._output.end_test(ModelCombiner(result, test))
         self._context.end_test(result)
+
+    def _add_exit_combine(self):
+        exit_combine = ('NOT robot-exit', '')
+        if exit_combine not in self._settings['TagStatCombine']:
+            self._settings['TagStatCombine'].append(exit_combine)
 
     def _get_timeout(self, test):
         if not test.timeout:

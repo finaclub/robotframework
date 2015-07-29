@@ -12,17 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import text_type as unicode
-
-from robot import utils
 from robot.errors import DataError
 from robot.model import Message as BaseMessage
+from robot.utils import get_timestamp, is_unicode, unic
 
 
 LEVELS = {
   'NONE'  : 6,
-  'ERROR' : 5,
-  'FAIL'  : 4,
+  'FAIL'  : 5,
+  'ERROR' : 4,
   'WARN'  : 3,
   'INFO'  : 2,
   'DEBUG' : 1,
@@ -73,14 +71,14 @@ class Message(BaseMessage):
     def __init__(self, message, level='INFO', html=False, timestamp=None):
         message = self._normalize_message(message)
         level, html = self._get_level_and_html(level, html)
-        timestamp = timestamp or utils.get_timestamp()
+        timestamp = timestamp or get_timestamp()
         BaseMessage.__init__(self, message, level, html, timestamp)
 
     def _normalize_message(self, msg):
         if callable(msg):
             return msg
-        if not isinstance(msg, unicode):
-            msg = utils.unic(msg)
+        if not is_unicode(msg):
+            msg = unic(msg)
         if '\r\n' in msg:
             msg = msg.replace('\r\n', '\n')
         return msg
@@ -90,7 +88,7 @@ class Message(BaseMessage):
         if level == 'HTML':
             return 'INFO', True
         if level not in LEVELS:
-            raise DataError("Invalid log level '%s'" % level)
+            raise DataError("Invalid log level '%s'." % level)
         return level, html
 
     @property
@@ -122,7 +120,7 @@ class IsLogged:
         try:
             return LEVELS[level.upper()]
         except KeyError:
-            raise DataError("Invalid log level '%s'" % level)
+            raise DataError("Invalid log level '%s'." % level)
 
 
 class AbstractLoggerProxy:

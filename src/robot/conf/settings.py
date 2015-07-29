@@ -19,11 +19,13 @@ import random
 import sys
 import time
 
-from robot import utils
 from robot.errors import DataError, FrameworkError
 from robot.output import LOGGER, loggerhelper
 from robot.result.keywordremover import KeywordRemover
 from robot.result.flattenkeywordmatcher import validate_flatten_keyword
+from robot.utils import (abspath, escape, format_time, get_link_path,
+                         html_escape, is_list_like,
+                         split_args_from_name_or_path)
 
 from .gatherfailed import gather_failed_tests
 
@@ -34,14 +36,14 @@ class _BaseSettings(object):
                  'Metadata'         : ('metadata', []),
                  'TestNames'        : ('test', []),
                  'ReRunFailed'      : ('rerunfailed', 'NONE'),
-                 'DeprecatedRunFailed': ('runfailed', 'NONE'),  # TODO: Remove in RF 2.10/3.0.
+                 'DeprecatedRunFailed': ('runfailed', 'NONE'),  # TODO: Remove in RF 3.0
                  'SuiteNames'       : ('suite', []),
                  'SetTag'           : ('settag', []),
                  'Include'          : ('include', []),
                  'Exclude'          : ('exclude', []),
                  'Critical'         : ('critical', None),
                  'NonCritical'      : ('noncritical', None),
-                 'OutputDir'        : ('outputdir', utils.abspath('.')),
+                 'OutputDir'        : ('outputdir', abspath('.')),
                  'Log'              : ('log', 'log.html'),
                  'Report'           : ('report', 'report.html'),
                  'XUnit'            : ('xunit', None),
@@ -50,7 +52,7 @@ class _BaseSettings(object):
                  'LogTitle'         : ('logtitle', None),
                  'ReportTitle'      : ('reporttitle', None),
                  'ReportBackground' : ('reportbackground',
-                                       ('#99FF66', '#99FF66', '#FF3333')),
+                                       ('#9e9', '#9e9', '#f66')),
                  'SuiteStatLevel'   : ('suitestatlevel', -1),
                  'TagStatInclude'   : ('tagstatinclude', []),
                  'TagStatExclude'   : ('tagstatexclude', []),
@@ -61,14 +63,15 @@ class _BaseSettings(object):
                  'FlattenKeywords'  : ('flattenkeywords', []),
                  'PreRebotModifiers': ('prerebotmodifier', []),
                  'StatusRC'         : ('statusrc', True),
-                 'MonitorColors'    : ('monitorcolors', 'AUTO'),
+                 'ConsoleColors'    : ('consolecolors', 'AUTO'),
+                 'MonitorColors'    : ('monitorcolors', None),  # TODO: Remove in RF 3.0
                  'StdOut'           : ('stdout', None),
                  'StdErr'           : ('stderr', None),
                  'XUnitSkipNonCritical' : ('xunitskipnoncritical', False)}
     _output_opts = ['Output', 'Log', 'Report', 'XUnit', 'DebugFile']
 
     def __init__(self, options=None, **extra_options):
-        self.start_timestamp = utils.format_time(time.time(), '', '-', '')
+        self.start_timestamp = format_time(time.time(), '', '-', '')
         self._opts = {}
         self._cli_opts = self._cli_opts.copy()
         self._cli_opts.update(self._extra_cli_opts)
@@ -77,7 +80,7 @@ class _BaseSettings(object):
     def _process_cli_opts(self, opts):
         for name, (cli_name, default) in self._cli_opts.items():
             value = opts[cli_name] if cli_name in opts else default
-            if default == [] and isinstance(value, string_types):
+            if default == [] and not is_list_like(value):
                 value = [value]
             self[name] = self._process_value(name, value)
         self['TestNames'] += self['ReRunFailed'] or self['DeprecatedRunFailed']
@@ -115,12 +118,15 @@ class _BaseSettings(object):
         if name in self._output_opts and (not value or value.upper() == 'NONE'):
             return None
         if name == 'OutputDir':
-            return utils.abspath(value)
-        if name in ['SuiteStatLevel', 'MonitorWidth']:
+            return abspath(value)
+        if name in ['MonitorWidth', 'MonitorColors', 'MonitorMarkers']:
+            option = '--' + name.lower()
+            LOGGER.warn("Option '%s' is deprecated. Use '%s' instead."
+                        % (option, option.replace('monitor', 'console')))
+        if name in ['SuiteStatLevel', 'MonitorWidth', 'ConsoleWidth']:
             return self._convert_to_positive_integer_or_default(name, value)
-        if name in ['PreRunModifiers', 'PreRebotModifiers', 'Listeners',
-                    'VariableFiles']:
-            return [self._split_args_from_name_or_path(item) for item in value]
+        if name == 'VariableFiles':
+            return [split_args_from_name_or_path(item) for item in value]
         if name == 'ReportBackground':
             return self._process_report_background(value)
         if name == 'TagStatCombine':
@@ -200,7 +206,7 @@ class _BaseSettings(object):
             LOGGER.error('Log file is not created if output.xml is disabled.')
             return None
         name = self._process_output_name(option, name)
-        path = utils.abspath(os.path.join(self['OutputDir'], name))
+        path = abspath(os.path.join(self['OutputDir'], name))
         self._create_output_dir(os.path.dirname(path), option)
         return path
 
@@ -258,6 +264,8 @@ class _BaseSettings(object):
                 pattern = pattern.replace(search, replace)
         while '  ' in pattern:
             pattern = pattern.replace('  ', ' ')
+        if pattern.startswith(' NOT'):
+            pattern = pattern[1:]
         return pattern
 
     def _process_tag_stat_link(self, value):
@@ -281,30 +289,6 @@ class _BaseSettings(object):
     def _get_default_value(self, name):
         return self._cli_opts[name][1]
 
-    def _split_args_from_name_or_path(self, name):
-        if os.path.exists(name):
-            return os.path.abspath(name), []
-        index = self._get_arg_separator_index_from_name_or_path(name)
-        if index == -1:
-            return name, []
-        args = name[index+1:].split(name[index])
-        name = name[:index]
-        if os.path.exists(name):
-            name = os.path.abspath(name)
-        return name, args
-
-    def _get_arg_separator_index_from_name_or_path(self, name):
-        colon_index = name.find(':')
-        # Handle absolute Windows paths
-        if colon_index == 1 and name[2:3] in ('/', '\\'):
-            colon_index = name.find(':', colon_index+1)
-        semicolon_index = name.find(';')
-        if colon_index == -1:
-            return semicolon_index
-        if semicolon_index == -1:
-            return colon_index
-        return min(colon_index, semicolon_index)
-
     def _validate_remove_keywords(self, values):
         for value in values:
             try:
@@ -326,6 +310,10 @@ class _BaseSettings(object):
                          for name in sorted(self._opts))
 
     @property
+    def output_directory(self):
+        return self['OutputDir']
+
+    @property
     def output(self):
         return self['Output']
 
@@ -340,6 +328,10 @@ class _BaseSettings(object):
     @property
     def xunit(self):
         return self['XUnit']
+
+    @property
+    def log_level(self):
+        return self['LogLevel']
 
     @property
     def split_log(self):
@@ -384,6 +376,10 @@ class _BaseSettings(object):
     def pre_rebot_modifiers(self):
         return self['PreRebotModifiers']
 
+    @property
+    def console_colors(self):
+        return self['MonitorColors'] or self['ConsoleColors']
+
 
 class RobotSettings(_BaseSettings):
     _extra_cli_opts = {'Output'             : ('output', 'output.xml'),
@@ -399,8 +395,13 @@ class RobotSettings(_BaseSettings):
                        'VariableFiles'      : ('variablefile', []),
                        'PreRunModifiers'    : ('prerunmodifier', []),
                        'Listeners'          : ('listener', []),
-                       'MonitorWidth'       : ('monitorwidth', 78),
-                       'MonitorMarkers'     : ('monitormarkers', 'AUTO'),
+                       'ConsoleType'        : ('console', 'verbose'),
+                       'ConsoleTypeDotted'  : ('dotted', False),
+                       'ConsoleTypeQuiet'   : ('quiet', False),
+                       'ConsoleWidth'       : ('consolewidth', 78),
+                       'MonitorWidth'       : ('monitorwidth', 0),  # TODO: Remove in RF 3.0
+                       'ConsoleMarkers'     : ('consolemarkers', 'AUTO'),
+                       'MonitorMarkers'     : ('monitormarkers', None),  # TODO: Remove in RF 3.0
                        'DebugFile'          : ('debugfile', None)}
 
     def get_rebot_settings(self):
@@ -421,7 +422,11 @@ class RobotSettings(_BaseSettings):
         return self.output is None
 
     def _escape_as_data(self, value):
-        return utils.escape(value)
+        return escape(value)
+
+    @property
+    def debug_file(self):
+        return self['DebugFile']
 
     @property
     def suite_config(self):
@@ -468,18 +473,31 @@ class RobotSettings(_BaseSettings):
         return self['SkipTeardownOnExit']
 
     @property
-    def log_level(self):
-        return self['LogLevel']
-
-    @property
-    def console_logger_config(self):
+    def console_output_config(self):
         return {
-            'width':   self['MonitorWidth'],
-            'colors':  self['MonitorColors'],
-            'markers': self['MonitorMarkers'],
+            'type':    self.console_type,
+            'width':   self.console_width,
+            'colors':  self.console_colors,
+            'markers': self.console_markers,
             'stdout':  self['StdOut'],
             'stderr':  self['StdErr']
         }
+
+    @property
+    def console_type(self):
+        if self['ConsoleTypeQuiet']:
+            return 'quiet'
+        if self['ConsoleTypeDotted']:
+            return 'dotted'
+        return self['ConsoleType']
+
+    @property
+    def console_width(self):
+        return self['MonitorWidth'] or self['ConsoleWidth']
+
+    @property
+    def console_markers(self):
+        return self['MonitorMarkers'] or self['ConsoleMarkers']
 
     @property
     def pre_run_modifiers(self):
@@ -488,6 +506,14 @@ class RobotSettings(_BaseSettings):
     @property
     def run_empty_suite(self):
         return self['RunEmptySuite']
+
+    @property
+    def variables(self):
+        return self['Variables']
+
+    @property
+    def variable_files(self):
+        return self['VariableFiles']
 
 
 class RebotSettings(_BaseSettings):
@@ -527,7 +553,7 @@ class RebotSettings(_BaseSettings):
         if not self.log:
             return {}
         return {
-            'title': utils.html_escape(self['LogTitle'] or ''),
+            'title': html_escape(self['LogTitle'] or ''),
             'reportURL': self._url_from_path(self.log, self.report),
             'splitLogBase': os.path.basename(os.path.splitext(self.log)[0]),
             'defaultLevel': self['VisibleLogLevel']
@@ -538,7 +564,7 @@ class RebotSettings(_BaseSettings):
         if not self.report:
             return {}
         return {
-            'title': utils.html_escape(self['ReportTitle'] or ''),
+            'title': html_escape(self['ReportTitle'] or ''),
             'logURL': self._url_from_path(self.report, self.log),
             'background' : self._resolve_background_colors(),
         }
@@ -546,7 +572,7 @@ class RebotSettings(_BaseSettings):
     def _url_from_path(self, source, destination):
         if not destination:
             return None
-        return utils.get_link_path(destination, os.path.dirname(source))
+        return get_link_path(destination, os.path.dirname(source))
 
     def _resolve_background_colors(self):
         colors = self['ReportBackground']
@@ -557,9 +583,9 @@ class RebotSettings(_BaseSettings):
         return self['Merge'] or self['DeprecatedMerge']
 
     @property
-    def console_logger_config(self):
+    def console_output_config(self):
         return {
-            'colors':  self['MonitorColors'],
+            'colors':  self.console_colors,
             'stdout':  self['StdOut'],
             'stderr':  self['StdErr']
         }

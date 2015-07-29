@@ -7,14 +7,14 @@ ${HELLO}          Used to test that variable name, not value, is shown in argume
 
 *** Test Cases ***
 Fail Because Timeout exceeded
-    [Documentation]    FAIL Keyword 'Fail Until Retried Often Enough' failed after retrying for 1 second 100 milliseconds. The last error was: Still 0 times to fail!
-    Wait Until Keyword Succeeds    1.1 seconds    555 ms    Fail Until Retried Often Enough
+    [Documentation]    FAIL GLOB: Keyword 'Fail Until Retried Often Enough' failed after retrying for 100 milliseconds. The last error was: Still ? times to fail!
+    Wait Until Keyword Succeeds    0.1 seconds    50ms    Fail Until Retried Often Enough
 
 Pass with first Try
     Wait Until Keyword Succeeds    2 minutes    30 seconds    Log    ${HELLO}
 
 Pass With Some Medium Try
-    Wait Until Keyword Succeeds    ${42}    200 milliseconds    Fail Until Retried Often Enough
+    Wait Until Keyword Succeeds    ${42}    2 milliseconds    Fail Until Retried Often Enough
 
 Pass With Last Possible Try
     Wait Until Keyword Succeeds    1.1 seconds    0.3 seconds    Fail Until Retried Often Enough
@@ -96,13 +96,20 @@ Invalid Number Of Arguments Inside Wait Until Keyword Succeeds
     Wait Until Keyword Succeeds    1 second    0.1s    No Operation    No    args    accepted
 
 Invalid Keyword Inside Wait Until Keyword Succeeds
-    [Documentation]    FAIL Keyword name must be string.
+    [Documentation]    FAIL Keyword name must be a string.
     ${list} =    Create List    1    2
     Wait Until Keyword Succeeds    1 second    0.1s    ${list}
 
 Keyword Not Found Inside Wait Until Keyword Succeeds
     [Documentation]    FAIL No keyword with name 'Non Existing KW' found.
     Wait Until Keyword Succeeds    1 second    0.1s    Non Existing KW
+
+Fail With Nonexisting Variable Inside Wait Until Keyword Succeeds
+    [Documentation]    FAIL  GLOB:Keyword 'Access Nonexisting Variable' failed after retrying 3 times. * Variable '${nonexisting}' not found.
+    Wait Until Keyword Succeeds    3 times    0s    Access Nonexisting Variable
+
+Pass With Initially Nonexisting Variable Inside Wait Until Keyword Succeeds
+    Wait Until Keyword Succeeds    3 times    0s    Access Initially Nonexisting Variable
 
 *** Keywords ***
 User Keyword
@@ -115,3 +122,11 @@ Wait Until Inside User Keyword
 Timeouted UK with Wait Until KW
     [Timeout]    ${timeout}
     Wait Until Keyword Succeeds    100ms    10ms    Fail    Error in timeouted UK
+
+Access Nonexisting Variable
+    Log    ${nonexisting}
+    Fail    Should NEVER be executed
+
+Access Initially Nonexisting Variable
+    Log    ${created after accessing first time}
+    [Teardown]    Set Test Variable    ${created after accessing first time}    created in keyword teardown

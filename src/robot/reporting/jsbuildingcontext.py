@@ -12,14 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types, text_type as unicode
+from six import text_type as unicode
 
 from contextlib import contextmanager
 import os.path
 
 from robot.output.loggerhelper import LEVELS
-from robot.utils import (html_attr_escape, html_escape, html_format,
-                         get_link_path, timestamp_to_secs)
+from robot.utils import (get_link_path, html_attr_escape, html_escape,
+                         html_format, is_string, is_unicode, timestamp_to_secs)
 
 from .stringcache import StringCache
 
@@ -29,7 +29,7 @@ class JsBuildingContext(object):
     def __init__(self, log_path=None, split_log=False, prune_input=False):
         # log_path can be a custom object in unit tests
         self._log_dir = os.path.dirname(log_path) \
-                if isinstance(log_path, string_types) else None
+                if is_string(log_path) else None
         self._split_log = split_log
         self._prune_input = prune_input
         self._strings = self._top_level_strings = StringCache()
@@ -40,7 +40,7 @@ class JsBuildingContext(object):
 
     def string(self, string, escape=True, attr=False):
         if escape and string:
-            if not isinstance(string, unicode):
+            if not is_unicode(string):
                 string = unicode(string)
             escaper = html_escape if not attr else html_attr_escape
             string = escaper(string)

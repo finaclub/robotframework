@@ -244,12 +244,18 @@ given input. With `timestamp`, `time string`, and `timer string` result
 formats seconds are, however, rounded to millisecond accuracy. Milliseconds
 may also be included even if there would be none.
 
-All keywords returning dates or times have an option to leave milliseconds
-out by giving any value considered true (e.g. any non-empty string) to
-``exclude_millis`` argument. When this option is used, seconds in returned
-dates and times are rounded to the nearest full second. With `timestamp`
-and `timer string` result formats, milliseconds will also be removed from
-the returned string altogether.
+All keywords returning dates or times have an option to leave milliseconds out
+by giving a true value to ``exclude_millis`` argument. If the argument is given
+as a string, it is considered true unless it is empty or case-insensitively
+equal to ``false`` or ``no``. Other argument types are tested using same
+[http://docs.python.org/2/library/stdtypes.html#truth-value-testing|rules as in
+Python]. Notice that prior to Robot Framework 2.9, all strings except the empty
+string were considered true.
+
+When milliseconds are excluded, seconds in returned dates and times are
+rounded to the nearest full second. With `timestamp` and `timer string`
+result formats, milliseconds will also be removed from the returned string
+altogether.
 
 Examples:
 | ${date} =       | Convert Date | 2014-06-11 10:07:42     |
@@ -259,7 +265,7 @@ Examples:
 | ${dt} =         | Convert Date | 2014-06-11 10:07:42.500 | datetime | exclude_millis=yes |
 | Should Be Equal | ${dt.second} | ${43}        |
 | Should Be Equal | ${dt.microsecond} | ${0}    |
-| ${time} =       | Convert Time | 102          | timer |
+| ${time} =       | Convert Time | 102          | timer | exclude_millis=false |
 | Should Be Equal | ${time}      | 00:01:42.000 |       |
 | ${time} =       | Convert Time | 102.567      | timer | exclude_millis=true |
 | Should Be Equal | ${time}      | 00:01:43     |       |
@@ -286,15 +292,15 @@ Additionally helper classes ``Date`` and ``Time`` can be used directly:
 |     interval = Time(interval).convert('number')
 |     # ...
 """
-from six import integer_types, string_types
 
 from datetime import datetime, timedelta
 import time
 import re
 
 from robot.version import get_version
-from robot.utils import (elapsed_time_to_string, secs_to_timestr,
-                         timestr_to_secs, type_name, IRONPYTHON)
+from robot.utils import (elapsed_time_to_string, is_falsy, is_number,
+                         is_string, secs_to_timestr, timestr_to_secs,
+                         type_name, IRONPYTHON)
 
 __version__ = get_version()
 __all__ = ['convert_time', 'convert_date', 'subtract_date_from_date',
@@ -335,7 +341,7 @@ def get_current_date(time_zone='local', increment=0,
     else:
         raise ValueError("Unsupported timezone '%s'." % time_zone)
     date = Date(dt) + Time(increment)
-    return date.convert(result_format, millis=not exclude_millis)
+    return date.convert(result_format, millis=is_falsy(exclude_millis))
 
 
 def convert_date(date, result_format='timestamp', exclude_millis=False,
@@ -358,7 +364,7 @@ def convert_date(date, result_format='timestamp', exclude_millis=False,
     | Should Be Equal | ${date}      | 2014-05-28 12:05:00     |
     """
     return Date(date, date_format).convert(result_format,
-                                           millis=not exclude_millis)
+                                           millis=is_falsy(exclude_millis))
 
 
 def convert_time(time, result_format='number', exclude_millis=False):
@@ -378,7 +384,7 @@ def convert_time(time, result_format='number', exclude_millis=False):
     | ${time} =       | Convert Time  | ${3661.5} | timer | exclude_milles=yes |
     | Should Be Equal | ${time}       | 01:01:02          |
     """
-    return Time(time).convert(result_format, millis=not exclude_millis)
+    return Time(time).convert(result_format, millis=is_falsy(exclude_millis))
 
 
 def subtract_date_from_date(date1, date2, result_format='number',
@@ -404,7 +410,7 @@ def subtract_date_from_date(date1, date2, result_format='number',
     | Should Be Equal | ${time}                 | 1 day 42 seconds        |
     """
     time = Date(date1, date1_format) - Date(date2, date2_format)
-    return time.convert(result_format, millis=not exclude_millis)
+    return time.convert(result_format, millis=is_falsy(exclude_millis))
 
 
 def add_time_to_date(date, time, result_format='timestamp',
@@ -428,11 +434,11 @@ def add_time_to_date(date, time, result_format='timestamp',
     | Should Be Equal | ${date}          | 2014-05-28 13:07:06.115 |
     """
     date = Date(date, date_format) + Time(time)
-    return date.convert(result_format, millis=not exclude_millis)
+    return date.convert(result_format, millis=is_falsy(exclude_millis))
 
 
 def subtract_time_from_date(date, time, result_format='timestamp',
-                       exclude_millis=False, date_format=None):
+                            exclude_millis=False, date_format=None):
     """Subtracts time from date and returns the resulting date.
 
     Arguments:
@@ -452,7 +458,7 @@ def subtract_time_from_date(date, time, result_format='timestamp',
     | Should Be Equal | ${date}                 | 2014-05-28 12:05:03.111 |
     """
     date = Date(date, date_format) - Time(time)
-    return date.convert(result_format, millis=not exclude_millis)
+    return date.convert(result_format, millis=is_falsy(exclude_millis))
 
 
 def add_time_to_time(time1, time2, result_format='number',
@@ -473,11 +479,11 @@ def add_time_to_time(time1, time2, result_format='number',
     | Should Be Equal | ${time}          | 04:07:03          |
     """
     time = Time(time1) + Time(time2)
-    return time.convert(result_format, millis=not exclude_millis)
+    return time.convert(result_format, millis=is_falsy(exclude_millis))
 
 
 def subtract_time_from_time(time1, time2, result_format='number',
-                       exclude_millis=False):
+                            exclude_millis=False):
     """Subtracts time from another time and returns the resulting time.
 
     Arguments:
@@ -495,7 +501,7 @@ def subtract_time_from_time(time1, time2, result_format='number',
     | Should Be Equal | ${time}                 | - 10s    |
     """
     time = Time(time1) - Time(time2)
-    return time.convert(result_format, millis=not exclude_millis)
+    return time.convert(result_format, millis=is_falsy(exclude_millis))
 
 
 class Date(object):
@@ -504,13 +510,17 @@ class Date(object):
         self.seconds = self._convert_date_to_seconds(date, input_format)
 
     def _convert_date_to_seconds(self, date, input_format):
-        if isinstance(date, string_types):
+        if is_string(date):
             return self._string_to_epoch(date, input_format)
         elif isinstance(date, datetime):
             return self._mktime_with_millis(date)
-        elif isinstance(date, integer_types + (float,)):
+        elif is_number(date):
             return float(date)
         raise ValueError("Unsupported input '%s'." % date)
+
+    @property
+    def datetime(self):
+        return self._datetime_from_seconds(self.seconds)
 
     def _string_to_epoch(self, ts, input_format):
         if not input_format:
@@ -594,14 +604,14 @@ class Date(object):
 
     def __add__(self, other):
         if isinstance(other, Time):
-            return Date(self.seconds + other.seconds)
+            return Date(self.datetime + other.timedelta)
         raise TypeError('Can only add Time to Date, got %s.' % type_name(other))
 
     def __sub__(self, other):
         if isinstance(other, Date):
-            return Time(self.seconds - other.seconds)
+            return Time(self.datetime - other.datetime)
         if isinstance(other, Time):
-            return Date(self.seconds - other.seconds)
+            return Date(self.datetime - other.timedelta)
         raise TypeError('Can only subtract Date or Time from Date, got %s.'
                         % type_name(other))
 
@@ -618,6 +628,10 @@ class Time(object):
                     time.seconds +
                     time.microseconds / 1e6)
         return timestr_to_secs(time, round_to=None)
+
+    @property
+    def timedelta(self):
+        return timedelta(seconds=self.seconds)
 
     def convert(self, format, millis=True):
         try:

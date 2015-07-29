@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import PY3, string_types
+from robot.utils import is_string
 
 from .comments import Comment
 
@@ -24,6 +24,7 @@ class Setting(object):
         self.parent = parent
         self._set_initial_value()
         self._set_comment(comment)
+        self._populated = False
 
     def _set_initial_value(self):
         self.value = []
@@ -44,8 +45,17 @@ class Setting(object):
 
     def populate(self, value, comment=None):
         """Mainly used at parsing time, later attributes can be set directly."""
+        if self._populated:
+            self._using_setting_multiple_times_is_deprecated()
         self._populate(value)
         self._set_comment(comment)
+        self._populated = True
+
+    def _using_setting_multiple_times_is_deprecated(self):
+        msg = "Using %s setting multiple times is deprecated."
+        if self.setting_name not in ['[Arguments]', '[Return]']:
+            msg += " Use '...' syntax for line continuation instead."
+        self.report_invalid_syntax(msg % self.setting_name, 'WARN')
 
     def _populate(self, value):
         self.value = value
@@ -60,7 +70,7 @@ class Setting(object):
         self.parent.report_invalid_syntax(message, level)
 
     def _string_value(self, value):
-        return value if isinstance(value, string_types) else ' '.join(value)
+        return value if is_string(value) else ' '.join(value)
 
     def _concat_string_with_value(self, string, value):
         if string:
@@ -105,7 +115,7 @@ class StringValueJoiner(object):
         return self.string_value(value)
 
     def string_value(self, value):
-        if isinstance(value, string_types):
+        if is_string(value):
             return value
         return self._separator.join(value)
 
@@ -119,7 +129,7 @@ class Documentation(Setting):
         self.value = self._concat_string_with_value(self.value, value)
 
     def _string_value(self, value):
-        return value if isinstance(value, string_types) else ''.join(value)
+        return value if is_string(value) else ''.join(value)
 
     def _data_as_list(self):
         return [self.setting_name, self.value]
@@ -285,7 +295,7 @@ class Library(_Import):
         _Import.__init__(self, parent, name, args, alias, comment)
 
     def _split_alias(self, args):
-        if len(args) >= 2 and isinstance(args[-2], string_types) \
+        if len(args) >= 2 and is_string(args[-2]) \
                 and args[-2].upper() == 'WITH NAME':
             return args[:-2], args[-1]
         return args, None

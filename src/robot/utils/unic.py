@@ -18,6 +18,7 @@ from pprint import PrettyPrinter
 
 from .dotdict import DotDict
 from .platform import IRONPYTHON, JYTHON
+from .robottypes import is_bytes, is_unicode
 
 
 def unic(item, *args):
@@ -70,9 +71,9 @@ class PrettyRepr(PrettyPrinter):
 
     def format(self, object, context, maxlevels, level):
         if PY2:
-            if isinstance(object, unicode):
+            if is_unicode(object):
                 return repr(object).lstrip('u'), True, False
-            if isinstance(object, str):
+            if is_bytes(object):
                 return 'b' + repr(object), True, False
         try:
             return PrettyPrinter.format(self, object, context, maxlevels, level)

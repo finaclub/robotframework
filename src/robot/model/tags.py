@@ -12,11 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import PY3, string_types
+from six import PY3
 
 import sys
 
-from robot.utils import Matcher, NormalizedDict, setter, unic
+from robot.utils import Matcher, NormalizedDict, is_string, setter, unic
 
 
 class Tags(object):
@@ -28,7 +28,7 @@ class Tags(object):
     def _tags(self, tags):
         if not tags:
             return ()
-        if isinstance(tags, string_types):
+        if is_string(tags):
             tags = (tags,)
         return self._normalize(tags)
 
@@ -128,6 +128,13 @@ class _SingleTagPattern(object):
         def __str__(self):
             return self.__unicode__()
 
+    def __bool__(self):
+        return bool(self._matcher)
+
+    #PY2
+    def __nonzero__(self):
+        return self.__bool__()
+
 
 class _AndTagPattern(object):
 
@@ -154,4 +161,6 @@ class _NotTagPattern(object):
         self._rest = _OrTagPattern(must_not_match)
 
     def match(self, tags):
+        if not self._first:
+            return not self._rest.match(tags)
         return self._first.match(tags) and not self._rest.match(tags)

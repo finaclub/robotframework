@@ -12,11 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
-
 from os.path import basename, splitext
 
 from robot.htmldata import HtmlFileWriter, ModelWriter, LOG, REPORT
+from robot.utils import is_string
 
 from .jswriter import JsResultWriter, SplitLogWriter
 
@@ -28,7 +27,7 @@ class _LogReportWriter(object):
 
     def _write_file(self, path, config, template):
         outfile = open(path, 'w') \
-            if isinstance(path, string_types) else path  # unit test hook
+            if is_string(path) else path  # unit test hook
         with outfile:
             model_writer = RobotModelWriter(outfile, self._js_model, config)
             writer = HtmlFileWriter(outfile, model_writer)

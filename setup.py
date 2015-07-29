@@ -7,8 +7,10 @@ from os.path import abspath, join, dirname
 from io import open
 from setuptools import setup
 
-if 'develop' in sys.argv or 'bdist_wheel' in sys.argv:
-    import setuptools    # support setuptools development mode and wheels
+try:
+    import setuptools    # use setuptools when available
+except ImportError:
+    pass
 
 CURDIR = dirname(abspath(__file__))
 
@@ -16,9 +18,14 @@ with open(join(CURDIR, 'src', 'robot', 'version.py')) as py:
     exec(py.read())
 VERSION = get_version()
 with open(join(CURDIR, 'README.rst')) as readme:
-    install = 'https://github.com/robotframework/robotframework/blob/master/INSTALL.rst'
-    LONG_DESCRIPTION = readme.read().replace(
-        '`<INSTALL.rst>`__', '`INSTALL.rst <%s>`__' % install)
+    LONG_DESCRIPTION = readme.read()
+    base_url = 'https://github.com/robotframework/robotframework/blob/master'
+    for text in 'INSTALL', 'CONTRIBUTING':
+        search = '`<{0}.rst>`__'.format(text)
+        replace = '`{0}.rst <{1}/{0}.rst>`__'.format(text, base_url)
+        if search not in LONG_DESCRIPTION:
+            raise RuntimeError('{} not found from README.rst'.format(search))
+        LONG_DESCRIPTION = LONG_DESCRIPTION.replace(search, replace)
 CLASSIFIERS = """
 Development Status :: 5 - Production/Stable
 License :: OSI Approved :: Apache Software License
@@ -46,9 +53,9 @@ libraries implemented either with Python or Java, and users can create
 new keywords from existing ones using the same syntax that is used for
 creating test cases.
 """.strip()
-PACKAGES = ['robot', 'robot.api', 'robot.conf',
-            'robot.htmldata', 'robot.libdocpkg', 'robot.libraries',
-            'robot.model', 'robot.output', 'robot.parsing',
+PACKAGES = ['robot', 'robot.api', 'robot.conf', 'robot.htmldata',
+            'robot.libdocpkg', 'robot.libraries', 'robot.model',
+            'robot.output', 'robot.output.console', 'robot.parsing',
             'robot.reporting', 'robot.result', 'robot.running',
             'robot.running.arguments', 'robot.running.timeouts',
             'robot.utils', 'robot.variables', 'robot.writer']

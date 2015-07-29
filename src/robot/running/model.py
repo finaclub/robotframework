@@ -12,11 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import warnings
+
 from robot import model
 from robot.conf import RobotSettings
 from robot.output import LOGGER, Output, pyloggingconf
 from robot.utils import setter
-from robot.variables import init_global_variables
 
 from .randomizer import Randomizer
 
@@ -32,13 +33,13 @@ class Keyword(model.Keyword):
 
 
 class ForLoop(Keyword):
-    __slots__ = ['range']
+    __slots__ = ['flavor']
     keyword_class = Keyword
 
-    def __init__(self, variables, values, range):
+    def __init__(self, variables, values, flavor):
         Keyword.__init__(self, assign=variables, args=values,
                          type=Keyword.FOR_LOOP_TYPE)
-        self.range = range
+        self.flavor = flavor
 
     @property
     def variables(self):
@@ -76,7 +77,33 @@ class TestSuite(model.TestSuite):
 
     def __init__(self,  name='', doc='', metadata=None, source=None):
         model.TestSuite.__init__(self, name, doc, metadata, source)
+        #: :class:`ResourceFile` instance containing imports, variables and
+        #: keywords the suite owns. When data is parsed from the file system,
+        #: this data comes from the same test case file that creates the suite.
         self.resource = ResourceFile(source=source)
+
+    # TODO: Remote deprecated propertys below in RF 3.0.
+
+    @property
+    def imports(self):
+        warnings.warn("'TestSuite.imports' is deprecated. Use "
+                      "'TestSuite.resource.imports' instead.",
+                      DeprecationWarning)
+        return self.resource.imports
+
+    @property
+    def variables(self):
+        warnings.warn("'TestSuite.variables' is deprecated. Use "
+                      "'TestSuite.resource.variables' instead.",
+                      DeprecationWarning)
+        return self.resource.variables
+
+    @property
+    def user_keywords(self):
+        warnings.warn("'TestSuite.user_keywords' is deprecated. Use"
+                      "'TestSuite.resource.keywords' instead.",
+                      DeprecationWarning)
+        return self.resource.keywords
 
     def configure(self, randomize_suites=False, randomize_tests=False,
                   randomize_seed=None, **options):
@@ -104,6 +131,9 @@ class TestSuite(model.TestSuite):
         passed as lists like ``variable=['VAR1:value1', 'VAR2:value2']``.
         If such an option is used only once, it can be given also as a single
         string like ``variable='VAR:value'``.
+
+        Additionally listener option allows passing object directly instead of
+        listener name, e.g. `run('tests.robot', listener=Listener())`.
 
         To capture stdout and/or stderr streams, pass open file objects in as
         special keyword arguments `stdout` and `stderr`, respectively. Note
@@ -145,11 +175,10 @@ class TestSuite(model.TestSuite):
         with LOGGER:
             if not settings:
                 settings = RobotSettings(options)
-                LOGGER.register_console_logger(**settings.console_logger_config)
+                LOGGER.register_console_logger(**settings.console_output_config)
             with pyloggingconf.robot_handler_enabled(settings.log_level):
                 with STOP_SIGNAL_MONITOR:
                     IMPORTER.reset()
-                    init_global_variables(settings)
                     output = Output(settings)
                     runner = Runner(output, settings)
                     self.visit(runner)

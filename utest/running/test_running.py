@@ -8,6 +8,7 @@ from os.path import abspath, dirname, normpath, join
 from robot.utils.asserts import assert_equals
 from robot.running import TestSuite, TestSuiteBuilder
 from resources.runningtestcase import RunningTestCase
+from resources.Listener import Listener
 
 
 CURDIR = dirname(abspath(__file__))
@@ -98,6 +99,14 @@ class TestRunning(unittest.TestCase):
         assert_suite(result, 'Suite', 'FAIL', tests=2)
         assert_test(result.tests[0], 'T1', 'FAIL', msg='Error message')
         assert_test(result.tests[1], 'T2', 'FAIL', ('added tag',), 'Error')
+
+    def test_modifiers_are_not_used(self):
+        # These options are valid but not used. Modifiers can be passed to
+        # suite.visit() explicitly if needed.
+        suite = TestSuite(name='Suite')
+        suite.tests.create(name='Test').keywords.create('No Operation')
+        result = run(suite, prerunmodifier='not used', prerebotmodifier=42)
+        assert_suite(result, 'Suite', 'PASS', tests=1)
 
 
 class TestTestSetupAndTeardown(unittest.TestCase):
@@ -253,6 +262,12 @@ class TestStateBetweenTestRuns(unittest.TestCase):
 
 
 class TestListeners(RunningTestCase):
+
+    def test_listeners(self):
+        module_file = join(ROOTDIR, 'utest', 'resources', 'Listener.py')
+        suite = build('setups_and_teardowns.robot')
+        suite.run(output=None, log=None, report=None, listener=[module_file+":1", Listener(2)])
+        self._assert_outputs([("[from listener 1]", 1), ("[from listener 2]", 1)])
 
     def test_listeners_unregistration(self):
         module_file = join(ROOTDIR, 'utest', 'resources', 'Listener.py')

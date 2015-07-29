@@ -98,8 +98,10 @@ For more information about Robot Framework and the ecosystem, see
 http://robotframework.org.
 
 Robot Framework project is hosted on GitHub_ where you can find source code,
-an issue tracker, and some further documentation.  Downloads are hosted at
-PyPI_, except for the standalone JAR distribution that is in `Maven central`_.
+an issue tracker, and some further documentation. If you are interested to
+contribute, see `<CONTRIBUTING.rst>`__ for instructions. Downloads are hosted
+at PyPI_, except for the standalone JAR distribution that is in `Maven
+central`_.
 
 .. _GitHub: https://github.com/robotframework/robotframework
 .. _PyPI: https://pypi.python.org/pypi/robotframework
@@ -133,8 +135,6 @@ install the framework with::
 
 For more detailed installation instructions, including installing
 Python, Jython and IronPython, see `<INSTALL.rst>`__.
-
-.. setup.py replaces the above `<INSTALL.rst>`__ with an absolute URL
 
 Example
 -------

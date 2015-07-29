@@ -12,11 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
-
-from robot.errors import DataError
+from robot.errors import DataError, VariableError
 from robot.output import LOGGER
-from robot.utils import escape, unescape, unic
+from robot.utils import escape, unescape, unic, is_string
 
 from .splitter import VariableSplitter
 
@@ -89,11 +87,11 @@ class VariableReplacer(object):
         return self._replace_string(item, splitter)
 
     def _cannot_have_variables(self, item):
-        return not (isinstance(item, string_types) and '{' in item)
+        return not (is_string(item) and '{' in item)
 
     def replace_string(self, string, ignore_errors=False):
         """Replaces variables from a string. Result is always a string."""
-        if not isinstance(string, string_types):
+        if not is_string(string):
             return unic(string)
         if self._cannot_have_variables(string):
             return unescape(string)
@@ -144,13 +142,13 @@ class VariableReplacer(object):
         try:
             index = int(index)
         except ValueError:
-            raise DataError("List variable '%s' used with invalid index '%s'."
-                            % (name, index))
+            raise VariableError("List variable '%s' used with invalid index '%s'."
+                                % (name, index))
         try:
             return variable[index]
         except IndexError:
-            raise DataError("List variable '%s' has no item in index %d."
-                            % (name, index))
+            raise VariableError("List variable '%s' has no item in index %d."
+                                % (name, index))
 
     def _get_dict_variable_item(self, splitter):
         name = splitter.get_replaced_variable(self)
@@ -159,8 +157,8 @@ class VariableReplacer(object):
         try:
             return variable[key]
         except KeyError:
-            raise DataError("Dictionary variable '%s' has no key '%s'."
-                            % (name, key))
+            raise VariableError("Dictionary variable '%s' has no key '%s'."
+                                % (name, key))
         except TypeError as err:
-            raise DataError("Dictionary variable '%s' used with invalid key: %s"
-                            % (name, err))
+            raise VariableError("Dictionary variable '%s' used with invalid key: %s"
+                                % (name, err))

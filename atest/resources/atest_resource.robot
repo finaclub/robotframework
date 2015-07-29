@@ -49,7 +49,7 @@ Run Tests Helper
     [Arguments]  ${user options}  @{data list}
     ${data string} =  Set Variables And Get Datasources  @{data list}
     ${options} =  Catenate
-    ...    --MonitorMarkers OFF    # AUTO (default) doesn't work with IronPython
+    ...    --ConsoleMarkers OFF    # AUTO (default) doesn't work with IronPython
     ...    ${user options}
     ...    --variable interpreter:${INTERPRETER}
     ...    --pythonpath ${LIBPATH1}
@@ -73,7 +73,7 @@ Run Rebot Without Processing Output
 Run Helper
     [Arguments]  ${runner}  ${options}  ${data string}
     Remove Files  ${OUTFILE}  ${OUTDIR}/*.xml  ${OUTDIR}/*.html
-    ${cmd} =  Catenate  ${runner}  --monitorcolors OFF  --outputdir ${OUTDIR}  --output ${OUTFILE}  --report NONE  --log NONE
+    ${cmd} =  Catenate  ${runner}  --consolecolors OFF  --outputdir ${OUTDIR}  --output ${OUTFILE}  --report NONE  --log NONE
     ...  ${options}  ${data string}  1>${STDOUTFILE}  2>${STDERRFILE}
     ${rc} =  Run And Return RC  ${cmd}
     Log  <a href="file://${OUTDIR}">${OUTDIR}</a>  HTML
@@ -211,6 +211,12 @@ File Should Match
     ${exp} =  Catenate  @{expected}
     Should Match  ${content}  ${exp}
 
+File Should Contain Match
+    [Arguments]  ${path}  @{expected}
+    ${content} =  Get Output File  ${path}
+    ${exp} =  Catenate  @{expected}
+    Should Match  ${content}  *${exp}*
+
 Stderr Should Be Equal To
     [Arguments]  @{expected}
     File Should Be Equal To  ${STDERR FILE}  @{expected}
@@ -266,6 +272,10 @@ Get Stderr
 Get Stdout
     ${file} =  Get Output File  ${STDOUT_FILE}
     [Return]  ${file}
+
+Syslog Should Contain Match
+    [Arguments]  @{expected}
+    File Should Contain Match    ${SYSLOG FILE}    @{expected}
 
 Check Syslog Contains
     [Arguments]  @{expected}

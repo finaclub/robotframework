@@ -12,14 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
-
 import copy
 import os.path
 
 from robot.output import LOGGER
 from robot.errors import FrameworkError
-from robot.utils import normpath, seq2str2
+from robot.utils import normpath, seq2str2, is_string
 
 from .builder import ResourceFileBuilder
 from .handlerstore import HandlerStore
@@ -101,7 +99,7 @@ class ImportCache:
         self._items = []
 
     def __setitem__(self, key, item):
-        if not isinstance(key, (string_types) + (tuple,)):
+        if not is_string(key) and not isinstance(key, tuple):
             raise FrameworkError('Invalid key for ImportCache')
         key = self._norm_path_key(key)
         if key not in self._keys:
@@ -133,4 +131,4 @@ class ImportCache:
         return key
 
     def _is_path(self, key):
-        return isinstance(key, string_types) and os.path.isabs(key) and os.path.exists(key)
+        return is_string(key) and os.path.isabs(key) and os.path.exists(key)

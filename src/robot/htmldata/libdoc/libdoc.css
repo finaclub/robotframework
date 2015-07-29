@@ -22,6 +22,9 @@ a:hover, a:active {
     text-decoration: underline;
     color: black;
 }
+a:hover {
+    text-decoration: underline !important;
+}
 .shortcuts {
     margin: 1em 0;
     font-size: 0.9em;
@@ -32,9 +35,6 @@ a:hover, a:active {
     white-space: nowrap;
     color: black;
 }
-.shortcuts a:hover {
-    text-decoration: underline;
-}
 .shortcuts a::first-letter {
     font-weight: bold;
     letter-spacing: 0.1em;
@@ -44,26 +44,28 @@ a:hover, a:active {
     letter-spacing: 0 !important;
 }
 .keywords {
-    border: 2px solid black;
+    border: 1px solid #ccc;
     border-collapse: collapse;
     empty-cells: show;
     margin: 0.3em 0;
     width: 100%;
 }
 .keywords th, .keywords td {
-    border: 2px solid black;
+    border: 1px solid #ccc;
     padding: 0.2em;
     vertical-align: top;
 }
 .keywords th {
-    background: #bbb;
+    background: #ddd;
     color: black;
 }
 .kw, .args, .tags {
     min-width: 100px;
     max-width: 20%;
 }
-td.kw {
+td.kw a {
+    color: inherit;
+    text-decoration: none;
     font-weight: bold;
 }
 .args span {
@@ -72,6 +74,7 @@ td.kw {
 }
 .tags a {
     color: inherit;
+    text-decoration: none;
     padding: 0 0.1em;
 }
 .footer {
@@ -95,7 +98,7 @@ td.kw {
     display: none;
 }
 #open-search {
-    border: 2px solid black;
+    border: 2px solid #ccc;
     border-radius: 4px;
     width: 40px;
     height: 40px;
@@ -107,16 +110,16 @@ td.kw {
     background-size: 24px 24px;
 }
 #open-search:hover {
-    background-color: yellow;
+    background-color: #ccc;
 }
 fieldset {
     background: white;
-    border: 2px solid black;
+    border: 2px solid #ccc;
     border-radius: 4px;
     padding: 6px 8px;
 }
 fieldset fieldset {
-    border: 1px solid black;
+    border: 1px solid #ccc;
     margin: 4px 0;
 }
 #search-title {

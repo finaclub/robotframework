@@ -14,8 +14,11 @@
 
 from six import text_type as unicode
 
-##TODO: In Python 3 this causes some circular import problems:
-## import utils
+"""Exceptions and return codes used internally.
+
+External libraries should not used exceptions defined here.
+"""
+
 
 # Return codes from Robot and Rebot.
 # RC below 250 is the number of failed critical tests and exactly 250
@@ -31,6 +34,7 @@ class RobotError(Exception):
 
     Do not raise this method but use more specific errors instead.
     """
+
     def __init__(self, message='', details=''):
         Exception.__init__(self, message)
         self.details = details
@@ -52,9 +56,16 @@ class FrameworkError(RobotError):
 class DataError(RobotError):
     """Used when the provided test data is invalid.
 
-    DataErrors are not be caught by keywords that run other keywords
-    (e.g. `Run Keyword And Expect Error`). Libraries should thus use
-    this exception with care.
+    DataErrors are not caught by keywords that run other keywords
+    (e.g. `Run Keyword And Expect Error`).
+    """
+
+
+class VariableError(DataError):
+    """Used when variable does not exist.
+
+    VariableErrors are caught by keywords that run other keywords
+    (e.g. `Run Keyword And Expect Error`).
     """
 
 
@@ -64,7 +75,7 @@ class TimeoutError(RobotError):
     This exception is handled specially so that execution of the
     current test is always stopped immediately and it is not caught by
     keywords executing other keywords (e.g. `Run Keyword And Expect
-    Error`). Libraries should thus NOT use this exception themselves.
+    Error`).
     """
 
 
@@ -79,8 +90,8 @@ class ExecutionFailed(RobotError):
                  continue_on_failure=False, return_value=None):
         if '\r\n' in message:
             message = message.replace('\r\n', '\n')
-        from . import utils #HACK: See commented global import
-        RobotError.__init__(self, utils.cut_long_message(message))
+        from robot.utils import cut_long_message
+        RobotError.__init__(self, cut_long_message(message))
         self.timeout = timeout
         self.syntax = syntax
         self.exit = exit
@@ -120,11 +131,10 @@ class ExecutionFailed(RobotError):
 
 class HandlerExecutionFailed(ExecutionFailed):
 
-    def __init__(self):
-        from . import utils #HACK: See commented global import
-        details = utils.ErrorDetails()
+    def __init__(self, details):
         timeout = isinstance(details.error, TimeoutError)
-        syntax = isinstance(details.error, DataError)
+        syntax = isinstance(details.error, DataError) \
+                 and not isinstance(details.error, VariableError)
         exit_on_failure = self._get(details.error, 'EXIT_ON_FAILURE')
         continue_on_failure = self._get(details.error, 'CONTINUE_ON_FAILURE')
         ExecutionFailed.__init__(self, details.message, timeout, syntax,
@@ -196,9 +206,9 @@ class ExecutionPassed(ExecutionFailed):
         self._earlier_failures = []
 
     def _get_message(self):
-        from . import utils #HACK: See commented global import
+        from robot.utils import printable_name
         return "Invalid '%s' usage." \
-               % utils.printable_name(self.__class__.__name__, code_style=True)
+               % printable_name(self.__class__.__name__, code_style=True)
 
     def set_earlier_failures(self, failures):
         if failures:

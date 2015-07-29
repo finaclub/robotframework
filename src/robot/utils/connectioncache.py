@@ -12,9 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
-
 from .normalizing import NormalizedDict
+from .robottypes import is_string
 
 
 class ConnectionCache(object):
@@ -63,7 +62,7 @@ class ConnectionCache(object):
         self.current = connection
         self._connections.append(connection)
         index = len(self._connections)
-        if isinstance(alias, string_types):
+        if is_string(alias):
             self._aliases[alias] = index
         return index
 
@@ -145,7 +144,7 @@ class ConnectionCache(object):
             return self._resolve_index(alias_or_index)
 
     def _resolve_alias(self, alias):
-        if isinstance(alias, string_types):
+        if is_string(alias):
             try:
                 return self._aliases[alias]
             except KeyError:

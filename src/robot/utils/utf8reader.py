@@ -12,15 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
-
 from codecs import BOM_UTF8
+
+from .robottypes import is_string
 
 
 class Utf8Reader(object):
 
     def __init__(self, path_or_file):
-        if isinstance(path_or_file, string_types):
+        if is_string(path_or_file):
             self._file = open(path_or_file, 'rb')
             self._close = True
         else:

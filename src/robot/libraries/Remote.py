@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import PY3, integer_types, string_types
+from six import PY3
 
 from six.moves.http_client import HTTPConnection
 import re
@@ -27,8 +27,8 @@ except ImportError:   # No expat in IronPython 2.7
         pass
 
 from robot.errors import RemoteError
-from robot.utils import (is_list_like, is_dict_like, timestr_to_secs, unic,
-                         DotDict, IRONPYTHON)
+from robot.utils import (is_bytes, is_dict_like, is_list_like, is_number,
+                         is_string, timestr_to_secs, unic, DotDict, IRONPYTHON)
 
 
 class Remote(object):
@@ -106,14 +106,14 @@ class ArgumentCoercer(object):
                 return handle(argument)
 
     def _is_string(self, arg):
-        return isinstance(arg, string_types)
+        return is_string(arg)
 
     #PY3:
     def _is_bytes(self, arg):
-        return isinstance(arg, bytes)
+        return is_bytes(arg)
 
     def _is_number(self, arg):
-        return isinstance(arg, integer_types + (float,))
+        return is_number(arg)
 
     def _handle_string(self, arg):
         if self._contains_binary(arg):
@@ -122,7 +122,7 @@ class ArgumentCoercer(object):
 
     def _contains_binary(self, arg):
         return (self.binary.search(arg) or
-                isinstance(arg, str) and not (PY3 or IRONPYTHON) and
+                is_bytes(arg) and not (PY3 or IRONPYTHON) and
                 self.non_ascii.search(arg))
 
     def _handle_binary(self, arg):

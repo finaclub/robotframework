@@ -113,6 +113,7 @@ if PY3 and do2to3:
 
 RUNNER = normpath(join(CURDIR, '..', 'src', 'robot', 'run.py'))
 ARGUMENTS = ' '.join('''
+--console dotted
 --doc RobotSPFrameworkSPacceptanceSPtests
 --reporttitle RobotSPFrameworkSPTestSPReport
 --logtitle RobotSPFrameworkSPTestSPLog

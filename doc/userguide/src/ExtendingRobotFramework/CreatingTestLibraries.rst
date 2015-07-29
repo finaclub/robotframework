@@ -147,15 +147,11 @@ to the library, as well as the library name itself, can be specified
 using variables, so it is possible to alter them, for example, from the
 command line.
 
-.. table:: Importing a test library with arguments
-   :class: example
+.. sourcecode:: robotframework
 
-   =========  ===========  =========  =======
-    Setting      Value       Value     Value
-   =========  ===========  =========  =======
-   Library    MyLibrary    10.0.0.1   8080
-   Library    AnotherLib   ${VAR}
-   =========  ===========  =========  =======
+   *** Settings ***
+   Library    MyLibrary     10.0.0.1    8080
+   Library    AnotherLib    ${VAR}
 
 Example implementations, first one in Python and second in Java, for
 the libraries used in the above example:
@@ -502,24 +498,15 @@ The example below illustrates how the example libraries above can be
 used. If you want to try this yourself, make sure that the library is
 in the `module search path`_.
 
-.. table:: Using simple example library
-   :class: example
+.. sourcecode:: robotframework
 
-   =========  ===========  =======  =======
-    Setting      Value      Value    Value
-   =========  ===========  =======  =======
-   Library     MyLibrary
-   =========  ===========  =======  =======
+   *** Settings ***
+   Library    MyLibrary
 
-.. table::
-   :class: example
-
-   ===========  ===========  ============  ============
-    Test Case     Action       Argument      Argument
-   ===========  ===========  ============  ============
-   My Test      Do Nothing
-   \            Hello        world
-   ===========  ===========  ============  ============
+   *** Test Cases ***
+   My Test
+       Do Nothing
+       Hello    world
 
 Using a custom keyword name
 '''''''''''''''''''''''''''
@@ -538,14 +525,11 @@ this attribute when used as follows:
   def login(username, password):
       # ...
 
-.. table::
-   :class: example
+.. sourcecode:: robotframework
 
-   ===========  ====================  ============  ============
-    Test Case          Action           Argument      Argument
-   ===========  ====================  ============  ============
-   My Test      Login Via User Panel  ${username}   ${password}
-   ===========  ====================  ============  ============
+   *** Test Cases ***
+   My Test
+       Login Via User Panel    ${username}    ${password}
 
 Using this decorator without an argument will have no effect on the exposed
 keyword name, but will still create the `robot_name` attribute.  This can be useful
@@ -658,18 +642,15 @@ second example, one argument is always required, but the second and
 the third one have default values, so it is possible to use the keyword
 with one to three arguments.
 
-.. table:: Using keywords with variable number of arguments
-   :class: example
+.. sourcecode:: robotframework
 
-   ===========  ==================  =============  ============  =============
-    Test Case         Action          Argument       Argument       Argument
-   ===========  ==================  =============  ============  =============
-   Defaults     One Default
-   \            One Default         argument
-   \            Multiple Defaults   required arg
-   \            Multiple Defaults   required arg   optional
-   \            Multiple Defaults   required arg   optional 1    optional 2
-   ===========  ==================  =============  ============  =============
+   *** Test Cases ***
+   Defaults
+       One Default
+       One Default    argument
+       Multiple Defaults    required arg
+       Multiple Defaults    required arg    optional
+       Multiple Defaults    required arg    optional 1    optional 2
 
 Default values with Java
 ''''''''''''''''''''''''
@@ -732,23 +713,18 @@ be combined with other ways of specifying arguments:
   def also_defaults(req, def1="default 1", def2="default 2", *rest):
       print req, def1, def2, rest
 
-.. table:: Using keywords with a variable number of arguments
-   :class: example
+.. sourcecode:: robotframework
 
-   ===============  =============  =============  ============  ==============
-      Test Case         Action       Argument       Argument      Argument
-   ===============  =============  =============  ============  ==============
-   Varargs          Any Arguments
-   \                Any Arguments   argument
-   \                Any Arguments   arg 1          arg 2         arg 2
-   \                ...             arg 4          arg 5
-   \                One Required    required arg
-   \                One Required    required arg   another arg   yet another
-   \                Also Defaults   required
-   \                Also Defaults   required       these two     have defaults
-   \                Also Defaults   1              2             3
-   \                ...             4              5             6
-   ===============  =============  =============  ============  ==============
+   *** Test Cases ***
+   Varargs
+       Any Arguments
+       Any Arguments    argument
+       Any Arguments    arg 1    arg 2    arg 3    arg 4    arg 5
+       One Required     required arg
+       One Required     required arg    another arg    yet another
+       Also Defaults    required
+       Also Defaults    required    these two    have defaults
+       Also Defaults    1    2    3    4    5    6
 
 Variable number of arguments with Java
 ''''''''''''''''''''''''''''''''''''''
@@ -829,15 +805,12 @@ below shows the basic functionality:
         for name, value in stuff.items():
             print name, value
 
-.. table:: Using keywords with `**kwargs`
-   :class: example
+.. sourcecode:: robotframework
 
-   ====================  ================  ==============  ==============  ============================
-         Test Case            Action          Argument        Argument               Argument
-   ====================  ================  ==============  ==============  ============================
-   Keyword Arguments     Example Keyword   hello=world                     # Logs 'hello world'.
-   \                     Example Keyword   foo=1           bar=42          # Logs 'foo 1' and 'bar 42'.
-   ====================  ================  ==============  ==============  ============================
+   *** Test Cases ***
+   Keyword Arguments
+       Example Keyword    hello=world        # Logs 'hello world'.
+       Example Keyword    foo=1    bar=42    # Logs 'foo 1' and 'bar 42'.
 
 Basically, all arguments at the end of the keyword call that use the
 `named argument syntax`_ `name=value`, and that do not match any
@@ -857,20 +830,25 @@ work together:
       for name, value in sorted(kwargs.items()):
           print 'kwarg:', name, value
 
-.. table:: Using normal arguments, varargs, and kwargs together
-   :class: example
+.. sourcecode:: robotframework
 
-   =====================  ============  ===========  ===========  ==========  ===================================================
-         Test Case            Action      Argument     Argument     Argument                             Argument
-   =====================  ============  ===========  ===========  ==========  ===================================================
-   Positional             Various Args  hello        world                    # Logs 'arg: hello' and 'vararg: world'.
-   Named                  Various Args  arg=value                             # Logs 'arg: value'.
-   Kwargs                 Various Args  a=1          b=2          c=3         # Logs 'kwarg: a 1', 'kwarg: b 2' and 'kwarg: c 3'.
-   \                      Various Args  c=3          a=1          b=2         # Same as above. Order does not matter.
-   Positional and kwargs  Various Args  1            2            kw=3        # Logs 'arg: 1', 'vararg: 2' and 'kwarg: kw 3'.
-   Named and kwargs       Various Args  arg=value    hello=world              # Logs 'arg: value' and 'kwarg: hello world'.
-   \                      Various Args  hello=world  arg=value                # Same as above. Order does not matter.
-   =====================  ============  ===========  ===========  ==========  ===================================================
+   *** Test Cases ***
+   Positional
+       Various Args    hello    world                # Logs 'arg: hello' and 'vararg: world'.
+
+   Named
+       Various Args    arg=value                     # Logs 'arg: value'.
+
+   Kwargs
+       Various Args    a=1    b=2    c=3             # Logs 'kwarg: a 1', 'kwarg: b 2' and 'kwarg: c 3'.
+       Various Args    c=3    a=1    b=2             # Same as above. Order does not matter.
+
+   Positional and kwargs
+       Various Args    1    2    kw=3                # Logs 'arg: 1', 'vararg: 2' and 'kwarg: kw 3'.
+
+   Named and kwargs
+       Various Args    arg=value      hello=world    # Logs 'arg: value' and 'kwarg: hello world'.
+       Various Args    hello=world    arg=value      # Same as above. Order does not matter.
 
 For a real world example of using a signature exactly like in the above
 example, see :name:`Run Process` and :name:`Start Keyword` keywords in the
@@ -974,21 +952,19 @@ of course still possible to use variables containing correct types with
 these keywords. Using variables is the only option if keywords have
 conflicting signatures.
 
-.. table:: Using automatic type coercion
-   :class: example
+.. sourcecode:: robotframework
 
-   ===========  =================  =============  ==========  =====================
-    Test Case         Action          Argument     Argument        Argument
-   ===========  =================  =============  ==========  =====================
-   Coercion     Double Argument    3.14
-   \            Double Argument    2e16                       # scientific notation
-   \            Compatible Types   Hello, world!  1234
-   \            Compatible Types   Hi again!      -10         true
-   \
-   No Coercion  Double Argument    ${3.14}
-   \            Conflicting Types  1              ${2}        # must use variables
-   \            Conflicting Types  ${1}           2
-   ===========  =================  =============  ==========  =====================
+   *** Test Cases ***
+   Coercion
+       Double Argument     3.14
+       Double Argument     2e16
+       Compatible Types    Hello, world!    1234
+       Compatible Types    Hi again!    -10    true
+
+   No Coercion
+       Double Argument    ${3.14}
+       Conflicting Types    1       ${2}    # must use variables
+       Conflicting Types    ${1}    2
 
 Starting from Robot Framework 2.8, argument type coercion works also with
 `Java library constructors`__.
@@ -1027,14 +1003,11 @@ __ `Using a custom keyword name`_
     def add_copies_to_cart(quantity, item):
         # ...
 
-.. table:: Using embedded arguments with library keyword
-   :class: example
+.. sourcecode:: robotframework
 
-   ===========  ==============================  =============
-    Test Case         Action                    Argument
-   ===========  ==============================  =============
-   My Test      Add 7 Copies Of Coffee To Cart
-   ===========  ==============================  =============
+   *** Test Cases ***
+   My Test
+       Add 7 Copies Of Coffee To Cart
 
 Communicating with Robot Framework
 ----------------------------------
@@ -1189,15 +1162,18 @@ messages, specify the log level explicitly by embedding the level into
 the message in the format `*LEVEL* Actual log message`, where
 `*LEVEL*` must be in the beginning of a line and `LEVEL` is
 one of the available logging levels `TRACE`, `DEBUG`,
-`INFO`, `WARN`, `FAIL` and `HTML`.
+`INFO`, `WARN`, `ERROR` and `HTML`.
 
-Warnings
-''''''''
+Errors and warnings
+'''''''''''''''''''
 
-Messages with `WARN` level are automatically written into `the
-console and into separate Test Execution Errors section`__ in log
-files. This makes warnings more visible than other messages and allows
+Messages with `ERROR` or `WARN` level are automatically written to the
+console and a separate `Test Execution Errors section`__ in the log
+files. This makes these messages more visible than others and allows
 using them for reporting important but non-critical problems to users.
+
+.. note:: In Robot Framework 2.9, new functionality was added to automatically
+          add ERRORs logged by keywords to the Test Execution Errors section.
 
 __ `Errors and warnings during execution`_
 
@@ -1302,7 +1278,7 @@ Logging example
 In most cases, the `INFO` level is adequate. The levels below it,
 `DEBUG` and `TRACE`, are useful for writing debug information.
 These messages are normally not shown, but they can facilitate debugging
-possible problems in the library itself. The `WARN` level can
+possible problems in the library itself. The `WARN` or `ERROR` level can
 be used to make messages more visible and `HTML` is useful if any
 kind of formatting is needed.
 
@@ -1314,6 +1290,7 @@ as pseudocode meaning `System.out.println("message");`.
 
    print 'Hello from a library.'
    print '*WARN* Warning from a library.'
+   print '*ERROR* Something unexpected happen that may indicate a problem in the test.'
    print '*INFO* Hello again!'
    print 'This will be part of the previous message.'
    print '*INFO* This is a new message.'
@@ -1333,6 +1310,11 @@ as pseudocode meaning `System.out.println("message");`.
        <td class="time">16:18:42.123</td>
        <td class="warn level">WARN</td>
        <td class="msg">Warning from a library.</td>
+     </tr>
+     <tr>
+       <td class="time">16:18:42.123</td>
+       <td class="error level">ERROR</td>
+       <td class="msg">Something unexpected happen that may indicate a problem in the test.</td>
      </tr>
      <tr>
        <td class="time">16:18:42.123</td>
@@ -1424,11 +1406,11 @@ Framework.
        logging.info('This is a boring example')
 
 The `logging` module has slightly different log levels than
-Robot Framework. Its levels `DEBUG` and `INFO` are mapped
-directly to the matching Robot Framework log levels and `WARNING`
-and everything above is mapped to `WARN`. Custom levels below
-`DEBUG` are mapped to `DEBUG` and everything between
-`DEBUG` and `WARNING` is mapped to `INFO`.
+Robot Framework. Its levels `DEBUG`, `INFO`, `WARNING` and `ERROR` are mapped
+directly to the matching Robot Framework log levels, and `CRITICAL`
+is mapped to `ERROR`. Custom log levels are mapped to the closest
+standard level smaller than the custom level. For example, a level
+between `INFO` and `WARNING` is mapped to Robot Framework's `INFO` level.
 
 __ http://docs.python.org/library/logging.html
 
@@ -1439,7 +1421,7 @@ Libraries can also log during the test library import and initialization.
 These messages do not appear in the `log file`_ like the normal log messages,
 but are instead written to the `syslog`_. This allows logging any kind of
 useful debug information about the library initialization. Messages logged
-using the `WARN` level are also visible in the `test execution errors`_
+using the `WARN` or `ERROR` levels are also visible in the `test execution errors`_
 section in the log file.
 
 Logging during the import and initialization is possible both using the
@@ -1506,15 +1488,14 @@ __ `Scalar variables`_
   def return_object(name):
       return MyObject(name)
 
-.. table:: Return one value from keywords
-   :class: example
+.. sourcecode:: robotframework
 
-   ================  ===============  ==============
-   ${string} =       Return String
-   Should Be Equal   ${string}        Hello, world!
-   ${object} =       Return Object    Robot
-   Should Be Equal   ${object.name}   Robot
-   ================  ===============  ==============
+   *** Test Cases ***
+   Returning one value
+       ${string} =    Return String
+       Should Be Equal    ${string}    Hello, world!
+       ${object} =    Return Object    Robot
+       Should Be Equal    ${object.name}    Robot
 
 Keywords can also return values so that they can be assigned into
 several `scalar variables`_ at once, into `a list variable`__, or
@@ -1533,20 +1514,19 @@ __ `List variables`_
       return ['a', 'list', 'of', 'strings']
 
 
-.. table:: Returning multiple values
-   :class: example
+.. sourcecode:: robotframework
 
-   ================  ==================  ==================  =======================
-   ${var1}           ${var2} =           Return Two Values
-   Should Be Equal   ${var1}             first value
-   Should Be Equal   ${var2}             second value
-   @{list} =         Return Two Values
-   Should Be Equal   @{list}[0]          first value
-   Should Be Equal   @{list}[1]          second value
-   ${s1}             ${s2}               @{li} =             Return Multiple Values
-   Should Be Equal   ${s1} ${s2}         a list
-   Should Be Equal   @{li}[0] @{li}[1]   of strings
-   ================  ==================  ==================  =======================
+   *** Test Cases ***
+   Returning multiple values
+       ${var1}    ${var2} =    Return Two Values
+       Should Be Equal    ${var1}    first value
+       Should Be Equal    ${var2}    second value
+       @{list} =    Return Two Values
+       Should Be Equal    @{list}[0]    first value
+       Should Be Equal    @{list}[1]    second value
+       ${s1}    ${s2}    @{li} =    Return Multiple Values
+       Should Be Equal    ${s1} ${s2}    a list
+       Should Be Equal    @{li}[0] @{li}[1]    of strings
 
 Communication when using threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1575,7 +1555,6 @@ methods will ignore messages from other than main thread, but the
 logged to Robot's log.
 
 __ https://github.com/robotframework/robotbackgroundlogger
-
 
 Distributing test libraries
 ---------------------------
@@ -2039,23 +2018,24 @@ Using the named argument syntax with dynamic libraries is illustrated
 by the following examples. All the examples use a keyword :name:`Dynamic`
 that has been specified to have argument specification
 `[arg1, arg2=xxx, arg3=yyy]`.
-The last column shows the arguments that the keyword is actually called with.
+The comment shows the arguments that the keyword is actually called with.
 
-.. table:: Using named argument syntax with a dynamic keyword
-   :class: example
+.. sourcecode:: robotframework
 
-   ===============   ========  ========  ========  ========  =============
-      Test Case       Action   Argument  Argument  Argument   Called With
-   ===============   ========  ========  ========  ========  =============
-   Only positional   Dynamic   a                             # [a]
-   \                 Dynamic   a         b                   # [a, b]
-   \                 Dynamic   a         b         c         # [a, b, c]
-   Named             Dynamic   a         arg2=b              # [a, b]
-   \                 Dynamic   a         b         arg3=c    # [a, b, c]
-   \                 Dynamic   a         arg2=b    arg3=c    # [a, b, c]
-   \                 Dynamic   arg1=a    arg2=b    arg3=c    # [a, b, c]
-   Fill skipped      Dynamic   a         arg3=c              # [a, xxx, c]
-   ===============   ========  ========  ========  ========  =============
+   *** Test Cases ***
+   Only positional
+       Dynamic    a                             # [a]
+       Dynamic    a         b                   # [a, b]
+       Dynamic    a         b         c         # [a, b, c]
+
+   Named
+       Dynamic    a         arg2=b              # [a, b]
+       Dynamic    a         b         arg3=c    # [a, b, c]
+       Dynamic    a         arg2=b    arg3=c    # [a, b, c]
+       Dynamic    arg1=a    arg2=b    arg3=c    # [a, b, c]
+
+   Fill skipped
+       Dynamic    a         arg3=c              # [a, xxx, c]
 
 __ `Getting keyword arguments`_
 
@@ -2076,24 +2056,29 @@ Using the free keyword argument syntax with dynamic libraries is illustrated
 by the following examples. All the examples use a keyword :name:`Dynamic`
 that has been specified to have argument specification
 `[arg1=xxx, arg2=yyy, **kwargs]`.
-The last column shows the arguments that the keyword is actually called with.
+The comment shows the arguments that the keyword is actually called with.
 
-.. table:: Using free keyword arguments with a dynamic keyword
-   :class: example
+.. sourcecode:: robotframework
 
-   =====================  ========  ========  ========  ========  ========================
-         Test Case         Action   Argument  Argument  Argument         Called With
-   =====================  ========  ========  ========  ========  ========================
-   No arguments           Dynamic                                 # [], {}
-   Only positional        Dynamic   a                             # [a], {}
-   \                      Dynamic   a         b                   # [a, b], {}
-   Only kwargs            Dynamic   a=1                           # [], {a: 1}
-   \                      Dynamic   a=1       b=2       c=3       # [], {a: 1, b: 2, c: 3}
-   Positional and kwargs  Dynamic   a         b=2                 # [a], {b: 2}
-   \                      Dynamic   a         b=2       c=3       # [a], {b: 2, c: 3}
-   Named and kwargs       Dynamic   arg1=a    b=2                 # [a], {b: 2}
-   \                      Dynamic   arg2=a    b=2       c=3       # [xxx, a], {b: 2, c: 3}
-   =====================  ========  ========  ========  ========  ========================
+   *** Test Cases ***
+   No arguments
+       Dynamic                            # [], {}
+
+   Only positional
+       Dynamic    a                       # [a], {}
+       Dynamic    a         b             # [a, b], {}
+
+   Only kwargs
+       Dynamic    a=1                     # [], {a: 1}
+       Dynamic    a=1       b=2    c=3    # [], {a: 1, b: 2, c: 3}
+
+   Positional and kwargs
+       Dynamic    a         b=2           # [a], {b: 2}
+       Dynamic    a         b=2    c=3    # [a], {b: 2, c: 3}
+
+   Named and kwargs
+       Dynamic    arg1=a    b=2           # [a], {b: 2}
+       Dynamic    arg2=a    b=2    c=3    # [xxx, a], {b: 2, c: 3}
 
 __ `Running dynamic keywords`_
 __ `Getting keyword arguments`_
@@ -2343,7 +2328,7 @@ library in Java code the same way.
    class ExtendedSeleniumLibrary(SeleniumLibrary):
 
        def title_should_start_with(self, expected):
-       	   title = self.get_title()
+           title = self.get_title()
            if not title.startswith(expected):
                raise AssertionError("Title '%s' did not start with '%s'"
                                     % (title, expected))
@@ -2413,25 +2398,16 @@ the new library in addition to it when needed. That is demonstrated in
 the example below where the code from the previous examples is
 expected to be available in a new library :name:`SeLibExtensions`.
 
-.. table:: Using library and another library that extends it
-   :class: example
+.. sourcecode:: robotframework
 
-   ===========  ===============  =======  =======
-    Settings         Value        Value    Value
-   ===========  ===============  =======  =======
-   Library      SeleniumLibrary
-   Library      SeLibExtensions
-   ===========  ===============  =======  =======
+   *** Settings ***
+   Library    SeleniumLibrary
+   Library    SeLibExtensions
 
-.. table::
-   :class: example
-
-   ===============  =======================  ==============  =================
-      Test Case             Action              Argument          Argument
-   ===============  =======================  ==============  =================
-   Example          Open Browser             http://example  # SeleniumLibrary
-   \                Title Should Start With  Example         # SeLibExtensions
-   ===============  =======================  ==============  =================
+   *** Test Cases ***
+   Example
+       Open Browser    http://example      # SeleniumLibrary
+       Title Should Start With    Example  # SeLibExtensions
 
 Libraries using dynamic or hybrid API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

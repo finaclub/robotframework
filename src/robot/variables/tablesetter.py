@@ -12,12 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types, text_type as unicode
+from six import text_type as unicode
 
 from contextlib import contextmanager
 
 from robot.errors import DataError
-from robot.utils import split_from_equals, unic, DotDict
+from robot.utils import split_from_equals, unic, is_string, DotDict
 
 from .isvar import validate_var
 from .splitter import VariableSplitter
@@ -94,7 +94,7 @@ class ScalarVariableTableValue(VariableTableValueBase):
 
     def _format_values(self, values):
         separator = None
-        if isinstance(values, string_types):
+        if is_string(values):
             values = [values]
         elif values and values[0].startswith('SEPARATOR='):
             separator = values.pop(0)[10:]

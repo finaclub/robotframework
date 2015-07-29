@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
+from robot.utils import is_string
 
 
 class VariableSplitter(object):
@@ -25,7 +25,7 @@ class VariableSplitter(object):
         self.end = -1
         self._identifiers = identifiers
         self._may_have_internal_variables = False
-        if not isinstance(string, string_types):
+        if not is_string(string):
             self._max_end = -1
             return
         self._max_end = len(string)

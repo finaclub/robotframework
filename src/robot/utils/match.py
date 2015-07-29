@@ -12,12 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
-
 import re
 from functools import partial
 
 from .normalizing import normalize
+from .robottypes import is_string
 
 
 def eq(str1, str2, ignore=(), caseless=True, spaceless=True):
@@ -56,6 +55,9 @@ class Matcher(object):
     def match_any(self, strings):
         return any(self.match(s) for s in strings)
 
+    def __nonzero__(self):
+        return bool(self._normalize(self.pattern))
+
 
 class MultiMatcher(object):
 
@@ -68,7 +70,7 @@ class MultiMatcher(object):
     def _ensure_list(self, patterns):
         if patterns is None:
             return []
-        if isinstance(patterns, string_types):
+        if is_string(patterns):
             return [patterns]
         return patterns
 

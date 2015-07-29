@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import string_types
+from robot.utils import is_string
 
 
 class CommentCache(object):
@@ -46,7 +46,7 @@ class Comments(object):
 class Comment(object):
 
     def __init__(self, comment_data):
-        if isinstance(comment_data, string_types):
+        if is_string(comment_data):
             comment_data = [comment_data] if comment_data else []
         self._comment = comment_data or []
 

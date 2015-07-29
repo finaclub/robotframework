@@ -1,14 +1,14 @@
 .. _libdoc:
 
-Library documentation tool (``libdoc``)
-=======================================
+Library documentation tool (Libdoc)
+===================================
 
 .. contents::
    :depth: 1
    :local:
 
-Libdoc is a tool for generating keyword documentation for test
-libraries and resource files in HTML and XML formats. The former
+Libdoc is Robot Framework's built-in tool for generating keyword documentation
+for test libraries and resource files in HTML and XML formats. The former
 format is suitable for humans and the latter for RIDE_ and other
 tools. Libdoc also has few special commands to show library or
 resource information on the console.
@@ -23,16 +23,9 @@ Documentation can be created for:
 Additionally it is possible to use XML spec created by Libdoc
 earlier as an input.
 
-Libdoc is built-in into Robot Framework and automatically included
-in the installation starting from version 2.7. With earlier versions you
-need to download `libdoc.py script`__ separately. The command line usage
-has changed slightly between these versions but the documentation syntax
-is still the same.
-
 __ `Python libraries`_
 __ `Java libraries`_
 __ `Dynamic libraries`_
-__ http://code.google.com/p/robotframework/wiki/LibraryDocumentationTool
 
 General usage
 -------------
@@ -214,7 +207,7 @@ chapter containing also an example of the generated documentation.
         def your_keyword(self, arg):
             """Takes one argument and *does nothing* with it.
 
-            Example:
+            Examples:
             | Your Keyword | xxx |
             | Your Keyword | yyy |
             """
@@ -261,7 +254,7 @@ than the earlier Python example.
         /**
          * Takes one argument and *does nothing* with it.
          *
-         * Example:
+         * Examples:
          * | Your Keyword | xxx |
          * | Your Keyword | yyy |
          */
@@ -322,41 +315,29 @@ documentation similarly as with test libraries.
 Also the resource file itself can have :setting:`Documentation` in the
 Setting table for documenting the whole resource file.
 
-Possible variables in resource files are not documented.
+Possible variables in resource files can not be documented.
 
-.. table:: An example resource file
-   :class: example
+.. sourcecode:: robotframework
 
-   +---------------+-----------------------------------------+-----------------------------------+
-   |    Setting    |                  Value                  |               Value               |
-   +===============+=========================================+===================================+
-   | Documentation | Resource file for demo purposes.        |                                   |
-   +---------------+-----------------------------------------+-----------------------------------+
-   | ...           | This resource is only used in an example| and it doesn't do anything useful.|
-   +---------------+-----------------------------------------+-----------------------------------+
+   *** Settings ***
+   Documentation    Resource file for demo purposes.
+   ...              This resource is only used in an example and it doesn't do anything useful.
 
-.. table::
-   :class: example
+   *** Keywords ***
+   My Keyword
+       [Documentation]   Does nothing
+       No Operation
 
-   +--------------+------------------+------------------------+-------------------------------+
-   |    Keyword   |      Action      |         Argument       |            Argument           |
-   +==============+==================+========================+===============================+
-   | My Keyword   | [Documentation]  | Does nothing           |                               |
-   +--------------+------------------+------------------------+-------------------------------+
-   |              | No Operation     |                        |                               |
-   +--------------+------------------+------------------------+-------------------------------+
-   |              |                  |                        |                               |
-   +--------------+------------------+------------------------+-------------------------------+
-   | Your Keyword | [Arguments]      | ${arg}                 |                               |
-   +--------------+------------------+------------------------+-------------------------------+
-   |              | [Documentation]  | Takes one argument and | | Example:\\n                 |
-   |              |                  | \*does nothing\* with  | | \| Your Keyword \| xxx \|\\n|
-   |              |                  | it.\\n                 | | \| Your Keyword \| yyy \|\\n|
-   +--------------+------------------+------------------------+-------------------------------+
-   |              | No Operation     |                        |                               |
-   +--------------+------------------+------------------------+-------------------------------+
+   Your Keyword
+       [Arguments]  ${arg}
+       [Documentation]   Takes one argument and *does nothing* with it.
+       ...
+       ...    Examples:
+       ...    | Your Keyword | xxx |
+       ...    | Your Keyword | yyy |
+       No Operation
 
-__ `Automatic newlines in test data`_
+__ `Newlines in test data`_
 
 Documentation syntax
 --------------------
@@ -571,7 +552,7 @@ custom sections:
 
 .. sourcecode:: python
 
-   """Library for libdoc demonstration purposes.
+   """Library for Libdoc demonstration purposes.
 
    This library does not do anything useful.
 

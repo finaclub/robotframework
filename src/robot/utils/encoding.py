@@ -12,7 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from six import PY3, text_type as unicode
+from six import PY3
+
+from .robottypes import is_unicode
 
 from .encodingsniffer import get_output_encoding, get_system_encoding
 from .unic import unic
@@ -30,7 +32,7 @@ def decode_output(string, force=False):
     on IronPython where all strings are `unicode` and caller knows decoding
     is needed. On Python 3 `force` is ignored.
     """
-    if isinstance(string, unicode) and (not force or PY3):
+    if is_unicode(string) and (not force or PY3):
         return string
     return unic(string, OUTPUT_ENCODING)
 
@@ -48,10 +50,10 @@ def encode_output(string, errors='replace'):
 if PY3 or JYTHON or IRONPYTHON:
 
     def decode_from_system(string):
-        return string if isinstance(string, unicode) else unic(string)
+        return string if is_unicode(string) else unic(string)
 
     def encode_to_system(string, errors='replace'):
-        return string if isinstance(string, unicode) else unic(string)
+        return string if is_unicode(string) else unic(string)
 
 else:
 
@@ -64,6 +66,6 @@ else:
 
         Non-Unicode values are first converted to Unicode.
         """
-        if not isinstance(string, unicode):
+        if not is_unicode(string):
             string = unic(string)
         return string.encode(SYSTEM_ENCODING, errors)
