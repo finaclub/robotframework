@@ -47,7 +47,7 @@ Evaluate with Get Variables Namespace
     Should be Equal    ${res}    ${True}
 
 Evaluate with Non-dict Namespace
-    ${ns} =    Evaluate    UserDict.UserDict(foo='value')    modules=UserDict
+    ${ns} =    Evaluate    six.moves.UserDict(foo='value')    modules=six
     ${res} =    Evaluate     foo == 'value'    namespace=${ns}
     Should be Equal    ${res}    ${True}
 
