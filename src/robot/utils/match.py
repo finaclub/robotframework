@@ -55,8 +55,12 @@ class Matcher(object):
     def match_any(self, strings):
         return any(self.match(s) for s in strings)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self._normalize(self.pattern))
+
+    #PY2
+    def __nonzero__(self):
+        return self.__bool__()
 
 
 class MultiMatcher(object):
