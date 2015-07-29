@@ -19,7 +19,7 @@ import time
 from six.moves import range
 import token
 from tokenize import generate_tokens, untokenize
-from StringIO import StringIO
+from six.moves import StringIO
 
 from robot.api import logger
 from robot.errors import (ContinueForLoop, DataError, ExecutionFailed,
