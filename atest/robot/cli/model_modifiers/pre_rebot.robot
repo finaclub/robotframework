@@ -32,9 +32,10 @@ Modifier with arguments separated with ';'
 
 Non-existing modifier
     Run Rebot    --prerebotmod NobodyHere -l ${LOG}    ${MODIFIED OUTPUT}
-    Stderr Should Match
-    ...    [ ERROR ] Importing model modifier 'NobodyHere' failed: ImportError:
-    ...    No module named ?NobodyHere?\nTraceback (most recent call last):\n*
+    Check Stderr Matches Regexp
+    ...    \\[ ERROR \\] Importing model modifier 'NobodyHere' failed:
+    ...    ImportError: No module named '?NobodyHere'?\\nTraceback
+    ...    \\(most recent call last\\):\\n(.|\\n)*
     Output should not be modified
     Log should not be modified
 
