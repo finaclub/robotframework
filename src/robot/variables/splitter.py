@@ -176,10 +176,14 @@ class VariableIterator(object):
     def __len__(self):
         return sum(1 for _ in self)
 
-    def __nonzero__(self):
+    def __bool__(self):
         try:
-            iter(self).next()
+            next(iter(self))
         except StopIteration:
             return False
         else:
             return True
+
+    #PY2
+    def __nonzero__(self):
+        return self.__bool__()
