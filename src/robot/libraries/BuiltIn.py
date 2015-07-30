@@ -2661,7 +2661,11 @@ class _Misc(_BuiltInBase):
     def _handle_variables_in_expression(self, expression, variables):
         tokens = []
         variable_started = seen_variable = False
-        generated = generate_tokens(StringIO(expression).readline)
+        if PY3: # str() to avoid TypeError
+            stream = StringIO(str(expression))
+        else:
+            stream = StringIO(expression)
+        generated = generate_tokens(stream.readline)
         for toknum, tokval, _, _, _ in generated:
             if variable_started:
                 if toknum == token.NAME:
