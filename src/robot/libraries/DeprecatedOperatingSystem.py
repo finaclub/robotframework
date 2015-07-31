@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from six import with_metaclass
+
 from .DeprecatedBuiltIn import deprecator
 from .OperatingSystem import OperatingSystem
 
@@ -19,8 +21,7 @@ from .OperatingSystem import OperatingSystem
 OS = OperatingSystem()
 
 
-class DeprecatedOperatingSystem(object):
-    __metaclass__ = deprecator
+class DeprecatedOperatingSystem(with_metaclass(deprecator, object)):
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 

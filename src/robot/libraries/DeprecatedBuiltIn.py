@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from six import with_metaclass
+
 import re
 import fnmatch
 
@@ -46,8 +48,7 @@ class deprecator(type):
         return deprecated
 
 
-class DeprecatedBuiltIn(object):
-    __metaclass__ = deprecator
+class DeprecatedBuiltIn(with_metaclass(deprecator, object)):
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
