@@ -206,17 +206,10 @@ List Should Not Contain Value, Value Found And Own Error Message
     List Should Not Contain Value    ${L1}    1    My error message!
 
 List Should Not Contain Duplicates With No Duplicates
-<<<<<<< HEAD
-    ${iterable}  ${tuple} =  Evaluate  iter(range(100)), (0, 1, 2, '0', '1', '2')
-    : FOR  ${list}  IN  ${L0}  ${L1}  ${L2}  ${L3}  ${L4}
-    ...  ${iterable}  ${tuple}
-    \  List Should Not Contain Duplicates  ${list}
-=======
-    ${iterable}    ${tuple} =    Evaluate    xrange(100), (0, 1, 2, '0', '1', '2')
+    ${iterable}    ${tuple} =    Evaluate    iter(range(100)), (0, 1, 2, '0', '1', '2')
     : FOR    ${list}    IN    ${L0}    ${L1}    ${L2}    ${L3}
     ...    ${L4}    ${iterable}    ${tuple}
     \    List Should Not Contain Duplicates    ${list}
->>>>>>> 65c2bdb
 
 List Should Not Contain Duplicates Is Case And Space Sensitive
     ${list} =    Create List    item    ITEM    i tem    i t e m    ITE_m
