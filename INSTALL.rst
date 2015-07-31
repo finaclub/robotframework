@@ -94,12 +94,11 @@ a good place to start is http://python.org. There you can download a suitable
 installer and get more information about the installation process and Python
 in general.
 
-Robot Framework 2.8 and older support Python 2.5, 2.6, and 2.7, but
-Robot Framework 2.9 will drop Python 2.5 support. The plan is to support
-also Python 3 in the future, latest with Robot Framework 3.0. If you need
-Python 3 support earlier, you can use the `un-official Python 3 port`_. If
-you need to use really old Python versions, Robot Framework 2.0 and 2.1
-support Python 2.3 and 2.4.
+Robot Framework 2.9 supports Python 2.6 and 2.7, and the plan is to support
+also Python 3 in the near future. If you need Python 3 support earlier, you
+can use the `un-official Python 3 port`_. If you need to use older Python
+versions, Robot Framework 2.5-2.8 support Python 2.5 and Robot Framework
+2.0-2.1 support Python 2.3 and 2.4.
 
 On Windows it is recommended to install Python to all users and to run the
 installer as an administrator. Additionally, environment variable
@@ -127,10 +126,10 @@ package, which you can run from the command line like `java -jar
 jython_installer-<version>.jar`. Depending on the  system configuration,
 it may also be possible to just double-click the installer.
 
-Robot Framework 2.8 and older support Jython 2.5 (requires Java 5 or newer)
-and Jython 2.7 (requires Java 7 or newer). The forthcoming Robot Framework
-2.9 will require Jython 2.7. If ancient Jython versions are needed, Robot
-Framework 2.0 and 2.1 support Jython 2.2.
+Robot Framework 2.9 supports Jython 2.7 which requires Java 7 or newer. If
+older Jython or Java versions are needed, Robot Framework 2.5-2.8 support
+Jython 2.5 (requires Java 5 or newer) and Robot Framework 2.0-2.1 support
+Jython 2.2.
 
 After installing Jython, you probably still want to `configure PATH`_ to make
 the ``jybot`` `runner script`_ executable on the command prompt.
@@ -146,7 +145,7 @@ When using IronPython, an additional dependency is installing
 `elementtree <http://effbot.org/downloads/#elementtree>`__
 module 1.2.7 preview release. This is required because the ``elementtree``
 module distributed with IronPython is
-`broken <http://ironpython.codeplex.com/workitem/31923>`__. You can install
+`broken <https://github.com/IronLanguages/main/issues/968>`__. You can install
 the package by downloading the source distribution, unzipping it, and running
 `ipy setup.py install` on the command prompt in the created directory.
 
@@ -438,8 +437,8 @@ with it like:
 
 .. sourcecode:: bash
 
-  java -jar robotframework-2.8.5.jar mytests.txt
-  java -jar robotframework-2.8.5.jar --variable name:value mytests.txt
+  java -jar robotframework-2.9.jar mytests.robot
+  java -jar robotframework-2.9.jar --variable name:value mytests.robot
 
 If you want to `post-process outputs`_ using Rebot or use other built-in
 `supporting tools`_, you need to give the command name ``rebot``, ``libdoc``,
@@ -447,8 +446,8 @@ If you want to `post-process outputs`_ using Rebot or use other built-in
 
 .. sourcecode:: bash
 
-  java -jar robotframework-2.8.5.jar rebot output.xml
-  java -jar robotframework-2.8.5.jar libdoc MyLibrary list
+  java -jar robotframework-2.9.jar rebot output.xml
+  java -jar robotframework-2.9.jar libdoc MyLibrary list
 
 For more information about the different commands, execute the JAR without
 arguments.
@@ -479,13 +478,13 @@ interpreter versions as a result:
 .. sourcecode:: bash
 
    $ pybot --version
-   Robot Framework 2.8.5 (Python 2.7.3 on linux2)
+   Robot Framework 2.9 (Python 2.7.10 on linux2)
 
    $ rebot --version
-   Rebot 2.8.5 (Python 2.7.3 on linux2)
+   Rebot 2.9 (Python 2.7.10 on linux2)
 
    $ jybot --version
-   Robot Framework 2.8.5 (Jython 2.5.3 on java1.7.0_60)
+   Robot Framework 2.9 (Jython 2.7 on java1.7.0_60)
 
 If running the runner scripts fails with a message saying that the command is
 not found or recognized, a good first step is double-checking the PATH_

@@ -144,7 +144,7 @@ Creating distributions
    - After that, the released JAR is synced to Maven central within an hour.
 
 __ https://issues.sonatype.org/secure/Dashboard.jspa
-__ https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven#HowToGeneratePGPSignaturesWithMaven-MavenGPGPlugin
+__ http://central.sonatype.org/pages/working-with-pgp-signatures.html
 __ https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
 
 6. User Guide
@@ -164,7 +164,7 @@ Release notes
 
 - Generate a template for the release notes::
 
-   invoke release_notes --login <github login> --password <github password>
+   invoke release_notes --version $VERSION --login <github login> --password <github password>
 
 - Create a new release at https://github.com/robotframework/robotframework/releases
 
