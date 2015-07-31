@@ -182,11 +182,12 @@ class TagStat(Stat):
             or Stat.__cmp__(self, other)
 
     def __lt__(self, other):
-        key = (other.critical, other.non_critical, bool(other.combined),
-               self._norm_name)
-        other_key = (self.critical, self.non_critical, bool(self.combined),
-                     other._norm_name)
-        return key < other_key
+        key = (self.critical, self.non_critical, bool(self.combined))
+        other_key = (other.critical, other.non_critical,
+                     bool(other.combined))
+        if other_key == key:
+            return Stat.__lt__(self, other)
+        return other_key < key
 
     #TODO: Necessary? See commented Stat.__eq__
     ## def __eq__(self, other):
