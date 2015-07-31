@@ -1,5 +1,7 @@
 import os
 
+from robot.utils import is_string
+
 
 class ListenImports(object):
     ROBOT_LISTENER_API_VERSION = 2
@@ -24,7 +26,7 @@ class ListenImports(object):
     def _pretty(self, entry):
         if isinstance(entry, list):
             return '[%s]' % ', '.join(entry)
-        if isinstance(entry, basestring) and os.path.isabs(entry):
+        if is_string(entry) and os.path.isabs(entry):
             entry = entry.replace('$py.class', '.py').replace('.pyc', '.py')
             tokens = entry.split(os.sep)
             index = -1 if tokens[-1] != '__init__.py' else -2
